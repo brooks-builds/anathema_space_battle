@@ -1,6 +1,10 @@
 [package]
-name = "anathema_space_war"
+name = "anathema_space_battle"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anathema = "0.2.11"
+bb_anathema_components = { version = "0.1.0", path = "../bb_anathema/packages/anathema_components" }
+color-eyre = "0.6.5"
+eyre = "0.6.12"
