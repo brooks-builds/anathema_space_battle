@@ -4,6 +4,8 @@ use anathema::{
 };
 use bb_anathema_components::BBAppComponent;
 
+use crate::router::Route;
+
 pub struct App;
 
 #[derive(Debug, State, Default)]
@@ -11,6 +13,7 @@ pub struct AppState {
     width: Value<u16>,
     height: Value<u16>,
     started: Value<bool>,
+    current_route: Value<String>,
 }
 
 impl Component for App {
@@ -28,6 +31,7 @@ impl Component for App {
 
         state.width.set(viewport.width);
         state.height.set(viewport.height);
+        state.current_route.set(Route::Home.into());
     }
 
     fn on_event(

@@ -1,10 +1,3 @@
 vstack
 	@BBTopNav [app_name: "Space Battle"]
-	if state.started
-		@game [width: state.width, height: state.height - 2]
-	else
-		@BBHeading [text: "Space Battle", padding_top: 2, padding_bottom: 2]
-		hstack
-			spacer
-			@BBButton (click->start_game) [label: "Start Game"]
-			spacer
+	@router [route: state.current_route, width: state.width, height: state.height - 2]
