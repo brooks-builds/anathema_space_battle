@@ -1,2 +1,4 @@
 switch attributes.route
-	case "Home": @splash_page
+	case "Home": @splash_page (nav_to->nav_to)
+	case "Lobby": @lobby_page [player_name: attributes.player_name]
+

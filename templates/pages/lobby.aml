@@ -1,0 +1,5 @@
+vstack
+	@BBHeading [text: "Battle Lobby", padding_top: 2, padding_bottom: 2]
+	hstack
+		text "Name: "
+		text attributes.player_name

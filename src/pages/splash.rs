@@ -4,6 +4,11 @@ use anathema::{
 };
 use bb_anathema_components::BBAppComponent;
 
+use crate::{
+    app::{App, AppMessage},
+    router::Route,
+};
+
 pub struct SplashPage;
 
 impl SplashPage {
@@ -30,7 +35,7 @@ impl Component for SplashPage {
         event: &mut anathema::component::UserEvent<'_>,
         state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        mut _context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         event.stop_propagation();
 
@@ -49,6 +54,15 @@ impl Component for SplashPage {
                 self.set_can_host_game(state);
                 self.set_can_join_game(state);
             }
+            "host_game" => {
+                let player_name = state.player_name.to_ref().clone();
+
+                context
+                    .components
+                    .by_name(App::ident())
+                    .send(AppMessage::HostGame { player_name });
+            }
+            "join_game" => todo!(),
             _ => unreachable!(),
         }
     }

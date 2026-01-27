@@ -7,7 +7,7 @@ vstack
 	padding [padding: 1]
 		hstack
 			spacer
-			@BBButton [label: "Host Game", disabled: !state.can_host_game]
+			@BBButton (click->host_game) [label: "Host Game", disabled: !state.can_host_game]
 			spacer
 	padding [top: 1]
 		hstack
@@ -19,5 +19,5 @@ vstack
 			spacer
 			@BBInput (on_change->game_code_changed) [label: "Game Code"]
 			padding [left: 1]
-				@BBButton [label: "Join Game", disabled: !state.can_join_game]
+				@BBButton (click->join_game) [label: "Join Game", disabled: !state.can_join_game]
 			spacer
