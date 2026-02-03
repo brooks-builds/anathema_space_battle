@@ -1,12 +1,15 @@
+use crate::{
+    api::{self, CreateGameResponse},
+    router::Route,
+};
 use anathema::{
     component::Component,
     state::{State, Value},
 };
 use bb_anathema_components::BBAppComponent;
 
-use crate::router::Route;
-
-pub struct App;
+#[derive(Debug, Default)]
+pub struct App(AppData);
 
 impl App {
     pub fn ident() -> &'static str {
@@ -18,9 +21,17 @@ impl App {
 pub struct AppState {
     width: Value<u16>,
     height: Value<u16>,
-    started: Value<bool>,
+    game_status: Value<String>,
     current_route: Value<String>,
     player_name: Value<String>,
+    game_code: Value<i32>,
+}
+
+#[derive(Debug, Default)]
+pub struct AppData {
+    game_id: Option<String>,
+    player_id: Option<String>,
+    token: Option<String>,
 }
 
 impl Component for App {
@@ -41,38 +52,30 @@ impl Component for App {
         state.current_route.set(Route::Home.into());
     }
 
-    fn on_event(
-        &mut self,
-        event: &mut anathema::component::UserEvent<'_>,
-        state: &mut Self::State,
-        mut _children: anathema::component::Children<'_, '_>,
-        mut _context: anathema::component::Context<'_, '_, Self::State>,
-    ) {
-        match event.name() {
-            "start_game" => {
-                let started = *state.started.to_ref();
-
-                state.started.set(!started);
-            }
-            "nav_to" => {
-                let route = event.data_checked::<Route>().copied().unwrap_or_default();
-
-                state.current_route.set(route.into());
-            }
-            _ => unimplemented!(),
-        }
-    }
-
     fn on_message(
         &mut self,
         message: Self::Message,
         state: &mut Self::State,
-        mut children: anathema::component::Children<'_, '_>,
-        mut context: anathema::component::Context<'_, '_, Self::State>,
+        mut _children: anathema::component::Children<'_, '_>,
+        context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         match message {
-            AppMessage::HostGame { player_name } => {
-                state.player_name.set(player_name);
+            AppMessage::NameSet(name) => {
+                state.player_name.set(name);
+                state.current_route.set(Route::Start.into());
+            }
+            AppMessage::CreateGame => {
+                let key = context.widget_id;
+                let player_name = state.player_name.to_ref().clone();
+
+                api::create_game(key, player_name, context.emitter.clone());
+            }
+            AppMessage::GameCreated(game_created_data) => {
+                self.0.game_id = Some(game_created_data.game_id);
+                state.game_status.set(game_created_data.status);
+                self.0.player_id = Some(game_created_data.player_id);
+                self.0.token = Some(game_created_data.token);
+                state.game_code.set(game_created_data.game_code);
                 state.current_route.set(Route::Lobby.into());
             }
         }
@@ -86,7 +89,7 @@ impl BBAppComponent for App {
         builder.component(
             Self::ident(),
             "templates/app.aml",
-            Self,
+            Self::default(),
             AppState::default(),
         )?;
 
@@ -95,5 +98,7 @@ impl BBAppComponent for App {
 }
 
 pub enum AppMessage {
-    HostGame { player_name: String },
+    NameSet(String),
+    CreateGame,
+    GameCreated(CreateGameResponse),
 }

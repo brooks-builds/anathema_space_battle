@@ -1,0 +1,6 @@
+vstack
+	padding [top: 10]
+		hstack
+			spacer
+			@BBButton (click->create_game) [label: "Create Game"]
+			spacer

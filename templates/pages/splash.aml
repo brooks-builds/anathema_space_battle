@@ -1,23 +1,11 @@
 vstack
-	padding [top: 1]
+	padding [top: 10]
 		hstack
 			spacer
-			@BBInput (on_change->name_changed) [label: "Enter your name"]
+			@BBInput (on_change->name_changed, on_enter->begin) [label: "Enter your name"]
 			spacer
 	padding [padding: 1]
 		hstack
 			spacer
-			@BBButton (click->host_game) [label: "Host Game", disabled: !state.can_host_game]
-			spacer
-	padding [top: 1]
-		hstack
-			spacer
-			text "or"
-			spacer
-	padding [padding: 1]
-		hstack
-			spacer
-			@BBInput (on_change->game_code_changed) [label: "Game Code"]
-			padding [left: 1]
-				@BBButton (click->join_game) [label: "Join Game", disabled: !state.can_join_game]
+			@BBButton (click->begin) [label: "Begin", disabled: !state.can_begin]
 			spacer

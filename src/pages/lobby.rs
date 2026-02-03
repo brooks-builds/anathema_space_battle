@@ -13,18 +13,18 @@ impl Component for LobbyPage {
 
     fn on_mount(
         &mut self,
-        state: &mut Self::State,
-        mut children: anathema::component::Children<'_, '_>,
-        mut context: anathema::component::Context<'_, '_, Self::State>,
+        _state: &mut Self::State,
+        mut _children: anathema::component::Children<'_, '_>,
+        context: anathema::component::Context<'_, '_, Self::State>,
     ) {
-        let Some(player_name) = context
+        let Some(_player_name) = context
             .attribute("player_name")
             .and_then(|value| value.as_str())
         else {
             dbg!("got to the lobby without a player name");
             return;
         };
-        if let Some(game_code) = context
+        if let Some(_game_code) = context
             .attribute("game_code")
             .and_then(|value| value.as_str())
         {

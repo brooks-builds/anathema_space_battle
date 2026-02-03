@@ -1,27 +1,15 @@
+use crate::app::{App, AppMessage};
 use anathema::{
     component::Component,
     state::{State, Value},
 };
 use bb_anathema_components::BBAppComponent;
 
-use crate::{
-    app::{App, AppMessage},
-    router::Route,
-};
-
 pub struct SplashPage;
 
 impl SplashPage {
-    fn set_can_host_game(&self, state: &mut SplashPageState) {
-        state
-            .can_host_game
-            .set(!state.player_name.to_ref().is_empty());
-    }
-
-    fn set_can_join_game(&self, state: &mut SplashPageState) {
-        state
-            .can_join_game
-            .set(*state.can_host_game.to_ref() && !state.game_code.to_ref().is_empty());
+    fn can_begin(&self, state: &mut SplashPageState) {
+        state.can_begin.set(!state.player_name.to_ref().is_empty());
     }
 }
 
@@ -44,26 +32,33 @@ impl Component for SplashPage {
                 let new_name = event.data_checked::<String>().cloned().unwrap_or_default();
 
                 state.player_name.set(new_name);
-                self.set_can_host_game(state);
-                self.set_can_join_game(state);
+                self.can_begin(state);
             }
-            "game_code_changed" => {
-                let new_game_code = event.data_checked::<String>().cloned().unwrap_or_default();
+            "begin" => {
+                let name = state.player_name.to_ref();
 
-                state.game_code.set(new_game_code);
-                self.set_can_host_game(state);
-                self.set_can_join_game(state);
-            }
-            "host_game" => {
-                let player_name = state.player_name.to_ref().clone();
+                if name.is_empty() {
+                    return;
+                }
 
-                context
-                    .components
-                    .by_name(App::ident())
-                    .send(AppMessage::HostGame { player_name });
+                let message = AppMessage::NameSet(name.clone());
+                context.components.by_name(App::ident()).send(message);
             }
-            "join_game" => todo!(),
             _ => unreachable!(),
+        }
+    }
+
+    fn on_key(
+        &mut self,
+        key: anathema::component::KeyEvent,
+        state: &mut Self::State,
+        mut _children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        if matches!(key.code, anathema::component::KeyCode::Enter) {
+            let name = state.player_name.to_ref();
+            let message = AppMessage::NameSet(name.clone());
+            context.components.by_name(App::ident()).send(message);
         }
     }
 }
@@ -85,8 +80,6 @@ impl BBAppComponent for SplashPage {
 
 #[derive(Debug, State, Default)]
 pub struct SplashPageState {
-    can_host_game: Value<bool>,
-    can_join_game: Value<bool>,
     player_name: Value<String>,
-    game_code: Value<String>,
+    can_begin: Value<bool>,
 }
