@@ -1,8 +1,12 @@
 use crate::app::AppMessage;
 use anathema::{component::Emitter, store::slab::Key};
+use color_eyre::owo_colors::OwoColorize;
 use reqwest::blocking::Client;
 use serde::Deserialize;
-use std::thread;
+use std::{
+    io::{BufRead, BufReader, Read},
+    thread,
+};
 
 const BASE_API_URL: &str = "http://localhost:3000";
 
@@ -55,4 +59,43 @@ pub fn join_game(widget_id: Key, player_name: String, emitter: Emitter, game_cod
 #[derive(Debug, Deserialize)]
 pub struct JoinGameResponse {
     pub token: String,
+    pub game_id: String,
+}
+
+pub fn get_lobby_sse(widget_id: Key, game_id: &str, emitter: Emitter) {
+    let url = format!("{BASE_API_URL}/api/games/{game_id}/lobby/stream");
+
+    thread::spawn(move || {
+        let client = Client::new();
+        let stream = client.get(url).send().unwrap();
+        let mut stream_reader = BufReader::new(stream);
+
+        loop {
+            // stripping the leading data from the line. This is added by axum Event.
+            let mut header = [0u8; 6];
+            stream_reader.read_exact(&mut header).unwrap();
+
+            let mut line = String::new();
+            stream_reader.read_line(&mut line).unwrap();
+
+            let lobby_data = serde_json::from_str::<LobbyStream>(&line).unwrap();
+            let message = AppMessage::LobbyUpdate(lobby_data);
+            emitter.try_emit(widget_id, message).unwrap();
+        }
+    });
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LobbyStream {
+    pub players: Vec<PlayerResponse>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PlayerResponse {
+    pub name: String,
+    pub id: String,
+    pub ship_class: String,
+    pub ship_character: char,
+    pub ship_color: String,
+    pub ready: bool,
 }

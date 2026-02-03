@@ -1,10 +1,10 @@
 use crate::{
-    api::{self, CreateGameResponse, JoinGameResponse},
+    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream},
     router::Route,
 };
 use anathema::{
     component::Component,
-    state::{State, Value},
+    state::{List, State, Value},
 };
 use bb_anathema_components::BBAppComponent;
 
@@ -25,6 +25,7 @@ pub struct AppState {
     current_route: Value<String>,
     player_name: Value<String>,
     game_code: Value<i32>,
+    player_names: Value<List<String>>,
 }
 
 #[derive(Debug, Default)]
@@ -71,12 +72,18 @@ impl Component for App {
                 api::create_game(key, player_name, context.emitter.clone());
             }
             AppMessage::GameCreated(game_created_data) => {
-                self.0.game_id = Some(game_created_data.game_id);
+                self.0.game_id = Some(game_created_data.game_id.clone());
                 state.game_status.set(game_created_data.status);
                 self.0.player_id = Some(game_created_data.player_id);
                 self.0.token = Some(game_created_data.token);
                 state.game_code.set(game_created_data.game_code);
                 state.current_route.set(Route::Lobby.into());
+
+                api::get_lobby_sse(
+                    context.widget_id,
+                    &game_created_data.game_id,
+                    context.emitter.clone(),
+                );
             }
             AppMessage::JoinGame(code) => {
                 api::join_game(
@@ -88,8 +95,23 @@ impl Component for App {
             }
             AppMessage::GameJoined(join_game_response) => {
                 self.0.token = Some(join_game_response.token);
+                self.0.game_id = Some(join_game_response.game_id.clone());
                 state.current_route.set(Route::Lobby.into());
+
+                api::get_lobby_sse(
+                    context.widget_id,
+                    &join_game_response.game_id,
+                    context.emitter.clone(),
+                );
             }
+            AppMessage::LobbyUpdate(lobby) => {
+                state.player_names.set(List::from_iter(
+                    lobby.players.iter().map(|player| player.name.clone()),
+                ))
+                airesnt
+
+            }
+
         }
     }
 }
@@ -115,4 +137,5 @@ pub enum AppMessage {
     GameCreated(CreateGameResponse),
     JoinGame(i32),
     GameJoined(JoinGameResponse),
+    LobbyUpdate(LobbyStream),
 }
