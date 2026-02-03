@@ -1,6 +1,17 @@
-vstack
-	padding [top: 10]
+padding [top: 5]
+	vstack
 		hstack
 			spacer
 			@BBButton (click->create_game) [label: "Create Game"]
+			spacer
+		padding [top: 2, bottom: 2]
+			hstack
+				spacer
+				text "or join game"
+				spacer
+		hstack
+			spacer
+			@BBInput (on_change->game_code_changed, on_enter->join_game) [label: "Game Code"]
+			text " "
+			@BBButton (click->join_game) [label: "Join Game", disabled: state.can_join_game]
 			spacer

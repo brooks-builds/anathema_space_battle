@@ -1,5 +1,5 @@
 use crate::{
-    api::{self, CreateGameResponse},
+    api::{self, CreateGameResponse, JoinGameResponse},
     router::Route,
 };
 use anathema::{
@@ -78,6 +78,18 @@ impl Component for App {
                 state.game_code.set(game_created_data.game_code);
                 state.current_route.set(Route::Lobby.into());
             }
+            AppMessage::JoinGame(code) => {
+                api::join_game(
+                    context.widget_id,
+                    state.player_name.to_ref().clone(),
+                    context.emitter.clone(),
+                    code,
+                );
+            }
+            AppMessage::GameJoined(join_game_response) => {
+                self.0.token = Some(join_game_response.token);
+                state.current_route.set(Route::Lobby.into());
+            }
         }
     }
 }
@@ -101,4 +113,6 @@ pub enum AppMessage {
     NameSet(String),
     CreateGame,
     GameCreated(CreateGameResponse),
+    JoinGame(i32),
+    GameJoined(JoinGameResponse),
 }
