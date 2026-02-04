@@ -1,4 +1,4 @@
-mod lobby;
+pub mod lobby;
 mod splash;
 mod start;
 

@@ -1,12 +1,19 @@
 vstack
 	@BBHeading [text: "Battle Lobby", padding_top: 2, padding_bottom: 2]
-	hstack
-		spacer
-		text "Game Code: "
-		text attributes.game_code
-		spacer
+	if attributes.game_code != 0
+		hstack
+			spacer
+			text "Game Code: "
+			text attributes.game_code
+			spacer
 	text "Players:"
 	padding [top: 1, left: 2]
-		hstack
-			text "Name: "
-			text attributes.player_name
+		vstack
+			for name in state.player_names
+				hstack
+					text [foreground: state.player_colors[loop]] state.player_ships[loop]
+					text " "
+					text name
+					text " "
+					if state.player_ready[loop]
+						text [foreground: "green"] "READY"

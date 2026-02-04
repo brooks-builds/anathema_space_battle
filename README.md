@@ -15,12 +15,12 @@
   - [x] Send API request to join a game
   - [x] Store API response to game state
   - [x] Player is taken to the lobby
-- [ ] Players see the game lobby
+- [x] Players see the game lobby
   - [x] API to get stream of players in lobby
-  - [ ] All player names are visible in the lobby
-  - [ ] Each players name is in their chosen color
-  - [ ] Each players ship is displayed
-  - [ ] Each players ready status is displayed
+  - [x] All player names are visible in the lobby
+  - [x] Each players name is in their chosen color
+  - [x] Each players ship is displayed
+  - [x] Each players ready status is displayed
 - [ ] Players can change their color
 - [ ] Players can change their ship
 - [ ] Players can ready up

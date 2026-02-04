@@ -1,15 +1,26 @@
-use anathema::{component::Component, state::State};
+use anathema::{
+    component::Component,
+    state::{List, State, Value},
+};
 use bb_anathema_components::BBAppComponent;
 
+use crate::app::AppMessage;
+
+#[derive(Default)]
 pub struct LobbyPage;
 
 #[derive(Debug, State, Default)]
-pub struct LobbyPageState {}
+pub struct LobbyPageState {
+    player_names: Value<List<String>>,
+    player_colors: Value<List<String>>,
+    player_ships: Value<List<char>>,
+    player_ready: Value<List<bool>>,
+}
 
 impl Component for LobbyPage {
     type State = LobbyPageState;
 
-    type Message = ();
+    type Message = AppMessage;
 
     fn on_mount(
         &mut self,
@@ -33,6 +44,35 @@ impl Component for LobbyPage {
             // create game
         }
     }
+
+    fn on_message(
+        &mut self,
+        message: Self::Message,
+        state: &mut Self::State,
+        mut children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        if let AppMessage::LobbyUpdate(lobby_stream) = message {
+            let player_names_iter = lobby_stream
+                .players
+                .iter()
+                .map(|player| player.name.to_owned());
+            let player_colors_iter = lobby_stream
+                .players
+                .iter()
+                .map(|player| player.ship_color.to_owned());
+            let player_ships_iter = lobby_stream
+                .players
+                .iter()
+                .map(|player| player.ship_character);
+            let player_ready = lobby_stream.players.iter().map(|player| player.ready);
+
+            state.player_names.set(List::from_iter(player_names_iter));
+            state.player_colors.set(List::from_iter(player_colors_iter));
+            state.player_ships.set(List::from_iter(player_ships_iter));
+            state.player_ready.set(List::from_iter(player_ready));
+        }
+    }
 }
 
 impl BBAppComponent for LobbyPage {
@@ -40,12 +80,18 @@ impl BBAppComponent for LobbyPage {
         builder: &mut anathema::runtime::Builder<()>,
     ) -> Result<(), anathema::runtime::Error> {
         builder.component(
-            "lobby_page",
+            Self::ident(),
             "templates/pages/lobby.aml",
-            Self,
+            Self::default(),
             LobbyPageState::default(),
         )?;
 
         Ok(())
+    }
+}
+
+impl LobbyPage {
+    pub fn ident() -> &'static str {
+        "lobby_page"
     }
 }

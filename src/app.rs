@@ -1,5 +1,6 @@
 use crate::{
     api::{self, CreateGameResponse, JoinGameResponse, LobbyStream},
+    pages::lobby::LobbyPage,
     router::Route,
 };
 use anathema::{
@@ -58,7 +59,7 @@ impl Component for App {
         message: Self::Message,
         state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         match message {
             AppMessage::NameSet(name) => {
@@ -72,12 +73,12 @@ impl Component for App {
                 api::create_game(key, player_name, context.emitter.clone());
             }
             AppMessage::GameCreated(game_created_data) => {
+                state.current_route.set(Route::Lobby.into());
                 self.0.game_id = Some(game_created_data.game_id.clone());
                 state.game_status.set(game_created_data.status);
                 self.0.player_id = Some(game_created_data.player_id);
                 self.0.token = Some(game_created_data.token);
                 state.game_code.set(game_created_data.game_code);
-                state.current_route.set(Route::Lobby.into());
 
                 api::get_lobby_sse(
                     context.widget_id,
@@ -104,14 +105,12 @@ impl Component for App {
                     context.emitter.clone(),
                 );
             }
-            AppMessage::LobbyUpdate(lobby) => {
-                state.player_names.set(List::from_iter(
-                    lobby.players.iter().map(|player| player.name.clone()),
-                ))
-                airesnt
-
+            AppMessage::LobbyUpdate(lobby_stream) => {
+                let lobby_page_id = context
+                    .components
+                    .by_name(LobbyPage::ident())
+                    .send(AppMessage::LobbyUpdate(lobby_stream));
             }
-
         }
     }
 }
