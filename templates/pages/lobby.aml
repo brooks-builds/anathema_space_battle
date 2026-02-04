@@ -7,6 +7,7 @@ vstack
 			text attributes.game_code
 			spacer
 	text "Players:"
+	text attributes.possible_colors
 	padding [top: 1, left: 2]
 		vstack
 			for name in state.player_names

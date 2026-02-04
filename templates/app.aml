@@ -5,6 +5,5 @@ vstack
 				text "Space Battle"
 				spacer
 				text state.player_name
-	text state.possible_ship_color_names
-	@router [route: state.current_route, width: state.width, height: state.height - 2, player_name: state.player_name, game_code: state.game_code, player_names: state.player_names]
+	@router [route: state.current_route, width: state.width, height: state.height - 2, player_name: state.player_name, game_code: state.game_code, possible_colors: state.possible_ship_color_names]
 

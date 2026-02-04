@@ -2,4 +2,4 @@ vstack
 	switch attributes.route
 		case "Home": @splash_page 
 		case "Start": @StartPage
-		case "Lobby": @lobby_page [player_name: attributes.player_name, game_code: attributes.game_code, player_names: attributes.player_names]
+		case "Lobby": @lobby_page [player_name: attributes.player_name, game_code: attributes.game_code, possible_colors: attributes.possible_colors]
