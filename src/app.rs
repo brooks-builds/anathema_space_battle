@@ -1,5 +1,5 @@
 use crate::{
-    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream},
+    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream, ShipColor},
     pages::lobby::LobbyPage,
     router::Route,
 };
@@ -27,6 +27,7 @@ pub struct AppState {
     player_name: Value<String>,
     game_code: Value<i32>,
     player_names: Value<List<String>>,
+    possible_ship_color_names: Value<List<String>>,
 }
 
 #[derive(Debug, Default)]
@@ -34,6 +35,7 @@ pub struct AppData {
     game_id: Option<String>,
     player_id: Option<String>,
     token: Option<String>,
+    possible_ship_colors: Vec<ShipColor>,
 }
 
 impl Component for App {
@@ -52,6 +54,7 @@ impl Component for App {
         state.width.set(viewport.width);
         state.height.set(viewport.height);
         state.current_route.set(Route::Home.into());
+        api::get_possible_colors(context.widget_id, context.emitter.clone());
     }
 
     fn on_message(
@@ -111,6 +114,13 @@ impl Component for App {
                     .by_name(LobbyPage::ident())
                     .send(AppMessage::LobbyUpdate(lobby_stream));
             }
+            AppMessage::PossibleShipColors(ship_colors) => {
+                self.0.possible_ship_colors = ship_colors.clone();
+
+                state.possible_ship_color_names.set(List::from_iter(
+                    ship_colors.into_iter().map(|ship_color| ship_color.name),
+                ));
+            }
         }
     }
 }
@@ -137,4 +147,5 @@ pub enum AppMessage {
     JoinGame(i32),
     GameJoined(JoinGameResponse),
     LobbyUpdate(LobbyStream),
+    PossibleShipColors(Vec<ShipColor>),
 }

@@ -98,3 +98,25 @@ pub struct PlayerResponse {
     pub ship_color: String,
     pub ready: bool,
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ShipColor {
+    pub id: String,
+    pub name: String,
+}
+
+pub fn get_possible_colors(widget_id: Key, emitter: Emitter) {
+    thread::spawn(move || {
+        let url = format!("{BASE_API_URL}/api/players/colors");
+        let client = Client::new();
+        let ship_colors = client
+            .get(url)
+            .send()
+            .unwrap()
+            .json::<Vec<ShipColor>>()
+            .unwrap();
+        let message = AppMessage::PossibleShipColors(ship_colors);
+
+        emitter.try_emit(widget_id, message).unwrap();
+    });
+}
