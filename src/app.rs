@@ -106,7 +106,7 @@ impl Component for App {
                 );
             }
             AppMessage::LobbyUpdate(lobby_stream) => {
-                let lobby_page_id = context
+                context
                     .components
                     .by_name(LobbyPage::ident())
                     .send(AppMessage::LobbyUpdate(lobby_stream));

@@ -1,6 +1,5 @@
 use crate::app::AppMessage;
 use anathema::{component::Emitter, store::slab::Key};
-use color_eyre::owo_colors::OwoColorize;
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::{

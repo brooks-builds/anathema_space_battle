@@ -49,8 +49,8 @@ impl Component for LobbyPage {
         &mut self,
         message: Self::Message,
         state: &mut Self::State,
-        mut children: anathema::component::Children<'_, '_>,
-        mut context: anathema::component::Context<'_, '_, Self::State>,
+        mut _children: anathema::component::Children<'_, '_>,
+        mut _context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         if let AppMessage::LobbyUpdate(lobby_stream) = message {
             let player_names_iter = lobby_stream
@@ -82,7 +82,7 @@ impl BBAppComponent for LobbyPage {
         builder.component(
             Self::ident(),
             "templates/pages/lobby.aml",
-            Self::default(),
+            LobbyPage,
             LobbyPageState::default(),
         )?;
 
