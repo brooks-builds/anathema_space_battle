@@ -166,3 +166,12 @@ pub fn change_ship(ship_id: &str, token: String) {
         client.put(url).header("token", token).send().unwrap();
     });
 }
+
+pub fn ready_up(token: String) {
+    thread::spawn(move || {
+        let client = Client::new();
+        let url = format!("{BASE_API_URL}/api/players/ready_up");
+
+        client.put(url).header("token", token).send().unwrap();
+    });
+}

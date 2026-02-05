@@ -168,6 +168,14 @@ impl Component for App {
                 };
                 api::change_ship(&ship.id, token.clone());
             }
+            AppMessage::ReadyUp => {
+                let Some(token) = &self.0.token else {
+                    eprintln!("Trying to ready up without a player token");
+                    return;
+                };
+
+                api::ready_up(token.clone());
+            }
         }
     }
 }
@@ -198,4 +206,5 @@ pub enum AppMessage {
     ChangingShipColor(String),
     PossibleShips(Vec<Ship>),
     ChangeShip(String),
+    ReadyUp,
 }

@@ -18,6 +18,8 @@ vstack
 					text possible_ship
 	text "Change Ship Color"
 	@BBColorPicker (on_select->set_ship_color) [colors: attributes.possible_colors]
+	padding [top: 1, bottom: 1]
+		@BBButton (click->ready_up) [label: "Ready Up"]
 	text "Players:"
 	padding [top: 1, left: 2]
 		vstack

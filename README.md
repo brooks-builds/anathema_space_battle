@@ -23,5 +23,5 @@
   - [x] Each players ready status is displayed
 - [x] Players can change their color
 - [x] Players can change their ship
-- [ ] Players can ready up
+- [x] Players can ready up
 - [ ] Players can quit out of the lobby

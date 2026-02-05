@@ -104,6 +104,13 @@ impl Component for LobbyPage {
 
                 context.components.by_name(App::ident()).send(message);
             }
+            "ready_up" => {
+                event.stop_propagation();
+
+                let message = AppMessage::ReadyUp;
+
+                context.components.by_name(App::ident()).send(message);
+            }
             _ => unreachable!(),
         }
     }
