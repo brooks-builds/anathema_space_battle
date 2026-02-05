@@ -93,6 +93,17 @@ impl Component for LobbyPage {
 
                 context.components.by_name(App::ident()).send(message);
             }
+            "set_ship" => {
+                event.stop_propagation();
+
+                let Some(ship_name) = event.data_checked::<String>() else {
+                    eprintln!("Ship name not set on button value");
+                    return;
+                };
+                let message = AppMessage::ChangeShip(ship_name.clone());
+
+                context.components.by_name(App::ident()).send(message);
+            }
             _ => unreachable!(),
         }
     }

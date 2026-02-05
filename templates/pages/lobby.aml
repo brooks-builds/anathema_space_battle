@@ -6,7 +6,17 @@ vstack
 			text "Game Code: "
 			text attributes.game_code
 			spacer
-	text "Set ship color"
+	text "Change Ship"
+	padding [padding: 2]
+		vstack
+			for possible_ship in attributes.possible_ship_names
+				hstack
+					@BBButton (click->set_ship) [label: "Set Ship", value: possible_ship]
+					text " "
+					text attributes.possible_ship_chars[loop]
+					text " "
+					text possible_ship
+	text "Change Ship Color"
 	@BBColorPicker (on_select->set_ship_color) [colors: attributes.possible_colors]
 	text "Players:"
 	padding [top: 1, left: 2]

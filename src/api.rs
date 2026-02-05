@@ -138,3 +138,31 @@ pub fn set_ship_color(token: String, color_id: &str) {
             .unwrap();
     });
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Ship {
+    pub id: String,
+    pub class_name: String,
+    pub character: char,
+}
+
+pub fn get_possible_ships(widget_id: Key, emitter: Emitter) {
+    thread::spawn(move || {
+        let client = Client::new();
+        let url = format!("{BASE_API_URL}/api/ships");
+        let possible_ships = client.get(url).send().unwrap().json::<Vec<Ship>>().unwrap();
+        let message = AppMessage::PossibleShips(possible_ships);
+
+        emitter.try_emit(widget_id, message).ok();
+    });
+}
+
+pub fn change_ship(ship_id: &str, token: String) {
+    let url = format!("{BASE_API_URL}/api/players/ship/{ship_id}");
+
+    thread::spawn(move || {
+        let client = Client::new();
+
+        client.put(url).header("token", token).send().unwrap();
+    });
+}

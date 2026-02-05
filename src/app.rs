@@ -1,5 +1,5 @@
 use crate::{
-    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream, ShipColor},
+    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream, Ship, ShipColor},
     pages::lobby::LobbyPage,
     router::Route,
 };
@@ -28,6 +28,8 @@ pub struct AppState {
     game_code: Value<i32>,
     player_names: Value<List<String>>,
     possible_ship_color_names: Value<List<String>>,
+    possible_ship_names: Value<List<String>>,
+    possible_ship_chars: Value<List<char>>,
 }
 
 #[derive(Debug, Default)]
@@ -36,6 +38,7 @@ pub struct AppData {
     player_id: Option<String>,
     token: Option<String>,
     possible_ship_colors: Vec<ShipColor>,
+    possible_ships: Vec<Ship>,
 }
 
 impl Component for App {
@@ -55,6 +58,7 @@ impl Component for App {
         state.height.set(viewport.height);
         state.current_route.set(Route::Home.into());
         api::get_possible_colors(context.widget_id, context.emitter.clone());
+        api::get_possible_ships(context.widget_id, context.emitter.clone());
     }
 
     fn on_message(
@@ -139,6 +143,31 @@ impl Component for App {
 
                 api::set_ship_color(token.clone(), color_id);
             }
+            AppMessage::PossibleShips(ships) => {
+                self.0.possible_ships = ships.clone();
+
+                let ship_names = ships.iter().map(|ship| ship.class_name.clone());
+                let ship_chars = ships.iter().map(|ship| ship.character);
+
+                state.possible_ship_names.set(List::from_iter(ship_names));
+                state.possible_ship_chars.set(List::from_iter(ship_chars));
+            }
+            AppMessage::ChangeShip(ship_name) => {
+                let Some(ship) = self
+                    .0
+                    .possible_ships
+                    .iter()
+                    .find(|ship| ship.class_name == ship_name)
+                else {
+                    eprintln!("Attempting to switch to ship name that doesn't exist: {ship_name}");
+                    return;
+                };
+                let Some(token) = &self.0.token else {
+                    eprintln!("Missing token when attempting to change ship");
+                    return;
+                };
+                api::change_ship(&ship.id, token.clone());
+            }
         }
     }
 }
@@ -167,4 +196,6 @@ pub enum AppMessage {
     LobbyUpdate(LobbyStream),
     PossibleShipColors(Vec<ShipColor>),
     ChangingShipColor(String),
+    PossibleShips(Vec<Ship>),
+    ChangeShip(String),
 }
