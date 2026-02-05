@@ -176,6 +176,28 @@ impl Component for App {
 
                 api::ready_up(token.clone());
             }
+            AppMessage::Quit => {
+                context.stop_runtime();
+            }
+        }
+    }
+
+    fn on_event(
+        &mut self,
+        event: &mut anathema::component::UserEvent<'_>,
+        _state: &mut Self::State,
+        mut _children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        if event.name() == "quit" {
+            if let Some(token) = &self.0.token {
+                api::quit(token.clone(), context.widget_id, context.emitter.clone());
+            } else {
+                context
+                    .components
+                    .by_name(Self::ident())
+                    .send(AppMessage::Quit);
+            }
         }
     }
 }
@@ -207,4 +229,5 @@ pub enum AppMessage {
     PossibleShips(Vec<Ship>),
     ChangeShip(String),
     ReadyUp,
+    Quit,
 }

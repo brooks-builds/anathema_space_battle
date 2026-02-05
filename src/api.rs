@@ -175,3 +175,14 @@ pub fn ready_up(token: String) {
         client.put(url).header("token", token).send().unwrap();
     });
 }
+
+pub fn quit(token: String, widget_id: Key, emitter: Emitter) {
+    thread::spawn(move || {
+        let client = Client::new();
+        let url = format!("{BASE_API_URL}/api/players");
+        let message = AppMessage::Quit;
+
+        client.delete(url).header("token", token).send().unwrap();
+        emitter.try_emit(widget_id, message).ok();
+    });
+}

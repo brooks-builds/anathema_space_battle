@@ -24,4 +24,4 @@
 - [x] Players can change their color
 - [x] Players can change their ship
 - [x] Players can ready up
-- [ ] Players can quit out of the lobby
+- [x] Players can quit out of the lobby

@@ -5,5 +5,7 @@ vstack
 				text "Space Battle"
 				spacer
 				text state.player_name
+				text " "
+				@BBButton (click->quit) [label: "Quit"]
 	@router [route: state.current_route, width: state.width, height: state.height - 2, player_name: state.player_name, game_code: state.game_code, possible_colors: state.possible_ship_color_names, possible_ship_names: state.possible_ship_names, possible_ship_chars: state.possible_ship_chars]
 
