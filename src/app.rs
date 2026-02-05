@@ -121,6 +121,24 @@ impl Component for App {
                     ship_colors.into_iter().map(|ship_color| ship_color.name),
                 ));
             }
+            AppMessage::ChangingShipColor(color_name) => {
+                let Some(color) = self
+                    .0
+                    .possible_ship_colors
+                    .iter()
+                    .find(|color| color.name == color_name)
+                else {
+                    dbg!("Changing to a ship color that we don't have", color_name);
+                    return;
+                };
+                let color_id = &color.id;
+                let Some(token) = &self.0.token else {
+                    dbg!("attempting to change ship color without a token");
+                    return;
+                };
+
+                api::set_ship_color(token.clone(), color_id);
+            }
         }
     }
 }
@@ -148,4 +166,5 @@ pub enum AppMessage {
     GameJoined(JoinGameResponse),
     LobbyUpdate(LobbyStream),
     PossibleShipColors(Vec<ShipColor>),
+    ChangingShipColor(String),
 }

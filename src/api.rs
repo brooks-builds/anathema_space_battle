@@ -120,3 +120,21 @@ pub fn get_possible_colors(widget_id: Key, emitter: Emitter) {
         emitter.try_emit(widget_id, message).unwrap();
     });
 }
+
+pub fn set_ship_color(token: String, color_id: &str) {
+    let body = serde_json::json!({
+        "color_id": color_id
+    });
+
+    thread::spawn(move || {
+        let client = Client::new();
+        let url = format!("{BASE_API_URL}/api/players/colors");
+
+        client
+            .put(url)
+            .header("token", token)
+            .json(&body)
+            .send()
+            .unwrap();
+    });
+}

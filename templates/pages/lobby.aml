@@ -6,8 +6,9 @@ vstack
 			text "Game Code: "
 			text attributes.game_code
 			spacer
+	text "Set ship color"
+	@BBColorPicker (on_select->set_ship_color) [colors: attributes.possible_colors]
 	text "Players:"
-	text attributes.possible_colors
 	padding [top: 1, left: 2]
 		vstack
 			for name in state.player_names
@@ -18,3 +19,4 @@ vstack
 					text " "
 					if state.player_ready[loop]
 						text [foreground: "green"] "READY"
+					spacer

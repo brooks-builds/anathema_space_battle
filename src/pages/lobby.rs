@@ -4,7 +4,7 @@ use anathema::{
 };
 use bb_anathema_components::BBAppComponent;
 
-use crate::app::AppMessage;
+use crate::app::{App, AppMessage};
 
 #[derive(Default)]
 pub struct LobbyPage;
@@ -71,6 +71,29 @@ impl Component for LobbyPage {
             state.player_colors.set(List::from_iter(player_colors_iter));
             state.player_ships.set(List::from_iter(player_ships_iter));
             state.player_ready.set(List::from_iter(player_ready));
+        }
+    }
+
+    fn on_event(
+        &mut self,
+        event: &mut anathema::component::UserEvent<'_>,
+        _state: &mut Self::State,
+        mut _children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        match event.name() {
+            "set_ship_color" => {
+                event.stop_propagation();
+
+                let Some(ship_color) = event.data_checked::<String>().cloned() else {
+                    return;
+                };
+
+                let message = AppMessage::ChangingShipColor(ship_color);
+
+                context.components.by_name(App::ident()).send(message);
+            }
+            _ => unreachable!(),
         }
     }
 }
