@@ -25,3 +25,13 @@
 - [x] Players can change their ship
 - [x] Players can ready up
 - [x] Players can quit out of the lobby
+- [ ] When the game switches to playing
+  - [ ] Stop request for the lobby
+  - [ ] Start getting the request for the game
+  - [ ] Switch to game view
+- [ ] Display when the player can take a turn
+- [ ] Display other players turn status'
+- [ ] Increase speed in a turn
+- [ ] Decrease speed in a turn
+- [ ] See our own speed
+- [ ] Cannot see other players speed
