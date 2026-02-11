@@ -1,0 +1,3 @@
+hstack
+	text "game id: "
+	text state.id

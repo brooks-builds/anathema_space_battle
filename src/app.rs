@@ -1,5 +1,8 @@
+use std::sync::mpsc::{Receiver, Sender, channel};
+
 use crate::{
-    api::{self, CreateGameResponse, JoinGameResponse, LobbyStream, Ship, ShipColor},
+    api::{self, CreateGameResponse, GameStream, JoinGameResponse, LobbyStream, Ship, ShipColor},
+    game::Game,
     pages::lobby::LobbyPage,
     router::Route,
 };
@@ -30,6 +33,7 @@ pub struct AppState {
     possible_ship_color_names: Value<List<String>>,
     possible_ship_names: Value<List<String>>,
     possible_ship_chars: Value<List<char>>,
+    player_id: Value<String>,
 }
 
 #[derive(Debug, Default)]
@@ -39,6 +43,8 @@ pub struct AppData {
     token: Option<String>,
     possible_ship_colors: Vec<ShipColor>,
     possible_ships: Vec<Ship>,
+    lobby_sse_sender: Option<Sender<()>>,
+    game_sse_sender: Option<Sender<()>>,
 }
 
 impl Component for App {
@@ -83,14 +89,19 @@ impl Component for App {
                 state.current_route.set(Route::Lobby.into());
                 self.0.game_id = Some(game_created_data.game_id.clone());
                 state.game_status.set(game_created_data.status);
-                self.0.player_id = Some(game_created_data.player_id);
+                self.0.player_id = Some(game_created_data.player_id.clone());
                 self.0.token = Some(game_created_data.token);
                 state.game_code.set(game_created_data.game_code);
+                state.player_id.set(game_created_data.player_id);
+
+                let (sender, receiver) = channel();
+                self.0.lobby_sse_sender = Some(sender);
 
                 api::get_lobby_sse(
                     context.widget_id,
                     &game_created_data.game_id,
                     context.emitter.clone(),
+                    receiver,
                 );
             }
             AppMessage::JoinGame(code) => {
@@ -105,11 +116,16 @@ impl Component for App {
                 self.0.token = Some(join_game_response.token);
                 self.0.game_id = Some(join_game_response.game_id.clone());
                 state.current_route.set(Route::Lobby.into());
+                state.player_id.set(join_game_response.player_id);
+
+                let (sender, receiver) = channel();
+                self.0.lobby_sse_sender = Some(sender);
 
                 api::get_lobby_sse(
                     context.widget_id,
                     &join_game_response.game_id,
                     context.emitter.clone(),
+                    receiver,
                 );
             }
             AppMessage::LobbyUpdate(lobby_stream) => {
@@ -180,7 +196,27 @@ impl Component for App {
                 context.stop_runtime();
             }
             AppMessage::GameStarting => {
+                if let Some(sender) = &self.0.lobby_sse_sender {
+                    sender.send(()).unwrap();
+                }
+                let (sender, receiver) = channel();
+                let game_id = self.0.game_id.as_deref().unwrap_or_default();
+
                 state.current_route.set(Route::Game.into());
+                self.0.game_sse_sender = Some(sender);
+
+                api::get_game_sse(
+                    context.widget_id,
+                    game_id,
+                    context.emitter.clone(),
+                    receiver,
+                );
+            }
+            AppMessage::GameUpdate(game_stream) => {
+                context
+                    .components
+                    .by_name(Game::ident())
+                    .send(AppMessage::GameUpdate(game_stream));
             }
         }
     }
@@ -234,4 +270,5 @@ pub enum AppMessage {
     ReadyUp,
     Quit,
     GameStarting,
+    GameUpdate(GameStream),
 }

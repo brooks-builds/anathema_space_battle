@@ -1,1 +1,51 @@
-canvas [width: attributes.width, height: attributes.height]
+vstack
+	hstack
+		text "game id: "
+		text state.id
+	hstack
+		text "game size: "
+		text state.width
+		text " x "
+		text state.height
+	hstack
+		border [width: state.width * 2 + 1, height: state.height]
+			canvas
+		vstack
+			@BBHeading [text: "Your Ship", padding_top: 1, padding_bottom: 1]
+			for player_id in state.player_ids
+				if player_id == attributes.player_id
+					vstack
+						if state.players_ready[loop]
+							text [foreground: "green"] "ready"
+						else
+							text [foreground: "red"] "Complete actions to take your turn"
+						hstack
+							text "Ship: "
+							text [foreground: state.player_colors[loop]] state.player_ships[loop]
+						hstack
+							text "Max Speed: "
+							text state.player_max_speeds[loop]
+						hstack "Position: "
+							text state.player_position_xs[loop]
+							text ", "
+							text state.player_position_ys[loop]
+			@BBHeading [text: "Opponents", padding_top: 1, padding_bottom: 1]
+			for player_id in state.player_ids
+				if player_id != attributes.player_id
+					border
+						vstack
+							if state.players_ready[loop]
+								text [foreground: "green"] "ready"
+							else
+								text [foreground: "red"] "Still taking their turn"
+							hstack
+								text state.player_names[loop]
+								text ": "
+								text [foreground: state.player_colors[loop]] state.player_ships[loop]
+							hstack
+								text "Max Speed: "
+								text state.player_max_speeds[loop]
+							hstack "Position: "
+								text state.player_position_xs[loop]
+								text ", "
+								text state.player_position_ys[loop]

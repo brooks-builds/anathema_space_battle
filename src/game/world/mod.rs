@@ -1,3 +1,8 @@
+mod vector;
+
+use std::str::FromStr;
+
+use crate::{api::GameStreamPlayer, game::world::vector::Vector};
 use anathema::{default_widgets::Canvas, state::Color, widgets::Style};
 
 #[derive(Debug, Default)]
@@ -5,6 +10,13 @@ pub struct World {
     pub width: i32,
     pub height: i32,
     pub cell_width: i32,
+    pub player_characters: Vec<char>,
+    pub player_positions: Vec<Vector>,
+    pub player_styles: Vec<Style>,
+    pub player_ids: Vec<String>,
+    pub player_names: Vec<String>,
+    pub player_max_speeds: Vec<i32>,
+    pub players_ready: Vec<bool>,
 }
 
 impl World {
@@ -14,24 +26,35 @@ impl World {
         self.height = height;
     }
 
-    pub fn print_grid(&self, canvas: &mut Canvas) {
-        let character = ' ';
-        let mut styles = [Style::new(), Style::new()];
+    pub fn add_player(&mut self, player: GameStreamPlayer) {
+        let position = Vector::new(player.position_x, player.position_y);
+        let mut style = Style::new();
 
-        styles[0].set_bg(anathema::state::Color::Black);
-        styles[1].set_bg(Color::Rgb(25, 25, 25));
+        style.set_fg(Color::from_str(&player.color).unwrap());
 
-        let mut styles_iter = styles.iter().cycle();
+        self.player_characters.push(player.ship);
+        self.player_positions.push(position);
+        self.player_styles.push(style);
+        self.player_ids.push(player.id);
+        self.player_names.push(player.name);
+        self.player_max_speeds.push(player.ship_max_speed);
+        self.players_ready.push(player.ready);
+    }
 
-        for row_index in 0..self.height {
-            for col_index in 0..self.width {
-                let position = (col_index, row_index);
-                let style = styles_iter.next().unwrap();
+    pub fn no_players(&self) -> bool {
+        self.player_characters.is_empty()
+    }
 
-                canvas.put(character, *style, position);
-            }
+    pub fn draw(&self, canvas: &mut Canvas) {
+        for (index, player_character) in self.player_characters.iter().enumerate() {
+            let player_position = &self.player_positions[index];
+            let style = self.player_styles[index];
 
-            styles_iter.next();
+            canvas.put(
+                *player_character,
+                style,
+                (player_position.x * self.cell_width, player_position.y),
+            );
         }
     }
 }

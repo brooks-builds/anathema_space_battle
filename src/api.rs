@@ -4,6 +4,7 @@ use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::{
     io::{BufRead, BufReader, Read},
+    sync::mpsc::Receiver,
     thread,
 };
 
@@ -59,9 +60,15 @@ pub fn join_game(widget_id: Key, player_name: String, emitter: Emitter, game_cod
 pub struct JoinGameResponse {
     pub token: String,
     pub game_id: String,
+    pub player_id: String,
 }
 
-pub fn get_lobby_sse(widget_id: Key, game_id: &str, emitter: Emitter) {
+pub fn get_lobby_sse(
+    widget_id: Key,
+    game_id: &str,
+    emitter: Emitter,
+    end_connection: Receiver<()>,
+) {
     let url = format!("{BASE_API_URL}/api/games/{game_id}/lobby/stream");
 
     thread::spawn(move || {
@@ -80,6 +87,10 @@ pub fn get_lobby_sse(widget_id: Key, game_id: &str, emitter: Emitter) {
             let lobby_data = serde_json::from_str::<LobbyStream>(&line).unwrap();
             let message = AppMessage::LobbyUpdate(lobby_data);
             emitter.try_emit(widget_id, message).unwrap();
+
+            if let Ok(()) = end_connection.try_recv() {
+                break;
+            }
         }
     });
 }
@@ -194,4 +205,58 @@ pub enum GameStatus {
     Lobby,
     Playing,
     GameOver,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GameStream {
+    pub game: GameStreamGame,
+    pub players: Vec<GameStreamPlayer>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GameStreamGame {
+    pub id: String,
+    pub status: GameStatus,
+    pub host_id: String,
+    pub width: i32,
+    pub height: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GameStreamPlayer {
+    pub id: String,
+    pub name: String,
+    pub ship: char,
+    pub ship_max_speed: i32,
+    pub color: String,
+    pub ready: bool,
+    pub position_x: i32,
+    pub position_y: i32,
+}
+
+pub fn get_game_sse(widget_id: Key, game_id: &str, emitter: Emitter, end_connection: Receiver<()>) {
+    let url = format!("{BASE_API_URL}/api/games/{game_id}/stream");
+
+    thread::spawn(move || {
+        let client = Client::new();
+        let stream = client.get(url).send().unwrap();
+        let mut stream_reader = BufReader::new(stream);
+
+        loop {
+            // stripping the leading data from the line. This is added by axum Event.
+            let mut header = [0u8; 6];
+            stream_reader.read_exact(&mut header).unwrap();
+
+            let mut line = String::new();
+            stream_reader.read_line(&mut line).unwrap();
+
+            let game_data = serde_json::from_str::<GameStream>(&line).unwrap();
+            let message = AppMessage::GameUpdate(game_data);
+            emitter.try_emit(widget_id, message).unwrap();
+
+            if let Ok(()) = end_connection.try_recv() {
+                break;
+            }
+        }
+    });
 }

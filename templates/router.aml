@@ -3,3 +3,4 @@ vstack
 		case "Home": @splash_page 
 		case "Start": @StartPage
 		case "Lobby": @lobby_page [player_name: attributes.player_name, game_code: attributes.game_code, possible_colors: attributes.possible_colors, possible_ship_names: attributes.possible_ship_names, possible_ship_chars: attributes.possible_ship_chars]
+		case "Game": @game [player_id: attributes.player_id]
