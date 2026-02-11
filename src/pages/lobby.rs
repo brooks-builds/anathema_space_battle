@@ -4,10 +4,13 @@ use anathema::{
 };
 use bb_anathema_components::BBAppComponent;
 
-use crate::app::{App, AppMessage};
+use crate::{
+    api::{self, GameStatus},
+    app::{App, AppMessage},
+};
 
 #[derive(Default)]
-pub struct LobbyPage;
+pub struct LobbyPage(api::GameStatus);
 
 #[derive(Debug, State, Default)]
 pub struct LobbyPageState {
@@ -50,7 +53,7 @@ impl Component for LobbyPage {
         message: Self::Message,
         state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        mut _context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         if let AppMessage::LobbyUpdate(lobby_stream) = message {
             let player_names_iter = lobby_stream
@@ -71,6 +74,11 @@ impl Component for LobbyPage {
             state.player_colors.set(List::from_iter(player_colors_iter));
             state.player_ships.set(List::from_iter(player_ships_iter));
             state.player_ready.set(List::from_iter(player_ready));
+
+            if let GameStatus::Playing = lobby_stream.game_status {
+                let message = AppMessage::GameStarting;
+                context.components.by_name(App::ident()).send(message);
+            }
         }
     }
 
@@ -123,7 +131,7 @@ impl BBAppComponent for LobbyPage {
         builder.component(
             Self::ident(),
             "templates/pages/lobby.aml",
-            LobbyPage,
+            LobbyPage::default(),
             LobbyPageState::default(),
         )?;
 

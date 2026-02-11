@@ -87,6 +87,7 @@ pub fn get_lobby_sse(widget_id: Key, game_id: &str, emitter: Emitter) {
 #[derive(Debug, Deserialize)]
 pub struct LobbyStream {
     pub players: Vec<PlayerResponse>,
+    pub game_status: GameStatus,
 }
 
 #[derive(Debug, Deserialize)]
@@ -185,4 +186,12 @@ pub fn quit(token: String, widget_id: Key, emitter: Emitter) {
         client.delete(url).header("token", token).send().unwrap();
         emitter.try_emit(widget_id, message).ok();
     });
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+pub enum GameStatus {
+    #[default]
+    Lobby,
+    Playing,
+    GameOver,
 }

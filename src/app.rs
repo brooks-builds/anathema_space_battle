@@ -179,6 +179,9 @@ impl Component for App {
             AppMessage::Quit => {
                 context.stop_runtime();
             }
+            AppMessage::GameStarting => {
+                state.current_route.set(Route::Game.into());
+            }
         }
     }
 
@@ -230,4 +233,5 @@ pub enum AppMessage {
     ChangeShip(String),
     ReadyUp,
     Quit,
+    GameStarting,
 }
