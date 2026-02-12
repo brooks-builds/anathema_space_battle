@@ -16,6 +16,8 @@ vstack
 					text attributes.possible_ship_chars[loop]
 					text " "
 					text possible_ship
+					text " max speed: "
+					text attributes.possible_ship_max_speeds[loop]
 	text "Change Ship Color"
 	@BBColorPicker (on_select->set_ship_color) [colors: attributes.possible_colors]
 	padding [top: 1, bottom: 1]

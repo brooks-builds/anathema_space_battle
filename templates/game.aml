@@ -25,7 +25,8 @@ vstack
 						hstack
 							text "Max Speed: "
 							text state.player_max_speeds[loop]
-						hstack "Position: "
+						hstack
+							text "Position: "
 							text state.player_position_xs[loop]
 							text ", "
 							text state.player_position_ys[loop]

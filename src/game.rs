@@ -29,6 +29,7 @@ pub struct GameState {
     players_ready: Value<List<bool>>,
     player_position_xs: Value<List<i32>>,
     player_position_ys: Value<List<i32>>,
+    player_speed: Value<i32>,
 }
 
 impl Component for Game {
