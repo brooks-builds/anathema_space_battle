@@ -35,6 +35,7 @@ pub struct AppState {
     possible_ship_chars: Value<List<char>>,
     possible_ship_max_speeds: Value<List<i32>>,
     player_id: Value<String>,
+    turn_number: Value<i32>,
 }
 
 #[derive(Debug, Default)]
@@ -218,10 +219,14 @@ impl Component for App {
                 );
             }
             AppMessage::GameUpdate(game_stream) => {
+                let turn = game_stream.game.turn_number;
+
                 context
                     .components
                     .by_name(Game::ident())
                     .send(AppMessage::GameUpdate(game_stream));
+
+                state.turn_number.set(turn);
             }
         }
     }

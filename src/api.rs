@@ -221,6 +221,7 @@ pub struct GameStreamGame {
     pub host_id: String,
     pub width: i32,
     pub height: i32,
+    pub turn_number: i32,
 }
 
 #[derive(Debug, Deserialize)]

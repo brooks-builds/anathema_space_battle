@@ -4,6 +4,11 @@ vstack
 			hstack
 				text "Space Battle"
 				spacer
+				if state.turn_number > 0
+					hstack
+						text "Turn: "
+						text state.turn_number
+				spacer
 				text state.player_name
 				text " "
 				@BBButton (click->quit) [label: "Quit"]

@@ -30,3 +30,5 @@
   - [x] Start getting the request for the game
   - [x] Switch to game view
 - [x] In the lobby, display max ship speed for each ship
+- [x] Turn number is displayed in the game
+- [ ] Players can see their current speed
