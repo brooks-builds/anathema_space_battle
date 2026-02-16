@@ -42,6 +42,21 @@ vstack
 							text state.player_position_xs[loop]
 							text ", "
 							text state.player_position_ys[loop]
+			@BBHeading [text: "Turn"]
+			hstack
+				text "Speed Change: "
+				text state.command_speed_change
+				text " -> "
+				text state.player_speed + state.command_speed_change
+			hstack
+				spacer
+				text "Change Speed: "
+				@BBButton (click->decrease_speed) [label: "- 1", disabled: state.player_speed == 0]
+				text " "
+				@BBButton (click->reset_speed_change) [label: "0"]
+				text " "
+				@BBButton (click->increase_speed) [label: "+ 1"]
+				spacer
 			@BBHeading [text: "Opponents", padding_top: 1, padding_bottom: 1]
 			for player_id in state.player_ids
 				if player_id != attributes.player_id

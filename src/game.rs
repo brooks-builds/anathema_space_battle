@@ -32,6 +32,7 @@ pub struct GameState {
     player_speed: Value<i32>,
     player_ship_classnames: Value<List<String>>,
     host_id: Value<String>,
+    command_speed_change: Value<i8>,
 }
 
 impl Component for Game {
@@ -136,6 +137,40 @@ impl Component for Game {
             .and_then(|value| value.as_str())
         {
             api::get_player(context.widget_id, context.emitter.clone(), token.to_owned());
+        }
+    }
+
+    fn on_event(
+        &mut self,
+        event: &mut anathema::component::UserEvent<'_>,
+        state: &mut Self::State,
+        mut children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        match event.name() {
+            "decrease_speed" => {
+                let mut current_speed_change = *state.command_speed_change.to_ref();
+                let current_speed = *state.player_speed.to_ref();
+
+                if current_speed > 0 {
+                    current_speed_change -= 1;
+                }
+
+                state
+                    .command_speed_change
+                    .set(current_speed_change.clamp(-1, 1));
+            }
+            "reset_speed_change" => state.command_speed_change.set(0),
+            "increase_speed" => {
+                let mut current_speed_change = *state.command_speed_change.to_ref();
+
+                current_speed_change += 1;
+
+                state
+                    .command_speed_change
+                    .set(current_speed_change.clamp(-1, 1));
+            }
+            _ => unreachable!(),
         }
     }
 }
