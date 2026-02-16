@@ -5,12 +5,12 @@ use anathema::{
 use bb_anathema_components::BBAppComponent;
 
 use crate::{
-    api::{self, GameStatus},
+    api::GameStatus,
     app::{App, AppMessage},
 };
 
 #[derive(Default)]
-pub struct LobbyPage(api::GameStatus);
+pub struct LobbyPage;
 
 #[derive(Debug, State, Default)]
 pub struct LobbyPageState {
@@ -18,6 +18,7 @@ pub struct LobbyPageState {
     player_colors: Value<List<String>>,
     player_ships: Value<List<char>>,
     player_ready: Value<List<bool>>,
+    player_ship_classnames: Value<List<String>>,
 }
 
 impl Component for LobbyPage {
@@ -69,11 +70,18 @@ impl Component for LobbyPage {
                 .iter()
                 .map(|player| player.ship_character);
             let player_ready = lobby_stream.players.iter().map(|player| player.ready);
+            let player_ship_classnames = lobby_stream
+                .players
+                .iter()
+                .map(|player| player.ship_class.to_owned());
 
             state.player_names.set(List::from_iter(player_names_iter));
             state.player_colors.set(List::from_iter(player_colors_iter));
             state.player_ships.set(List::from_iter(player_ships_iter));
             state.player_ready.set(List::from_iter(player_ready));
+            state
+                .player_ship_classnames
+                .set(List::from_iter(player_ship_classnames));
 
             if let GameStatus::Playing = lobby_stream.game_status {
                 let message = AppMessage::GameStarting;
@@ -131,7 +139,7 @@ impl BBAppComponent for LobbyPage {
         builder.component(
             Self::ident(),
             "templates/pages/lobby.aml",
-            LobbyPage::default(),
+            LobbyPage,
             LobbyPageState::default(),
         )?;
 

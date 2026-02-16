@@ -1,4 +1,7 @@
 vstack
+	hstack
+		text "Player token: "
+		text attributes.player_token
 	@BBHeading [text: "Battle Lobby", padding_top: 2, padding_bottom: 2]
 	if attributes.game_code != 0
 		hstack
@@ -27,7 +30,12 @@ vstack
 		vstack
 			for name in state.player_names
 				hstack
-					text [foreground: state.player_colors[loop]] state.player_ships[loop]
+					container [foreground: state.player_colors[loop]]
+						hstack
+							text  state.player_ships[loop]
+							text " ("
+							text state.player_ship_classnames[loop]
+							text ")"
 					text " "
 					text name
 					text " "

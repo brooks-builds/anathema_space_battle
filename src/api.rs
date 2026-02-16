@@ -104,7 +104,6 @@ pub struct LobbyStream {
 #[derive(Debug, Deserialize)]
 pub struct PlayerResponse {
     pub name: String,
-    pub id: String,
     pub ship_class: String,
     pub ship_character: char,
     pub ship_color: String,
@@ -217,7 +216,6 @@ pub struct GameStream {
 #[derive(Debug, Deserialize)]
 pub struct GameStreamGame {
     pub id: String,
-    pub status: GameStatus,
     pub host_id: String,
     pub width: i32,
     pub height: i32,
@@ -234,6 +232,7 @@ pub struct GameStreamPlayer {
     pub ready: bool,
     pub position_x: i32,
     pub position_y: i32,
+    pub ship_classname: String,
 }
 
 pub fn get_game_sse(widget_id: Key, game_id: &str, emitter: Emitter, end_connection: Receiver<()>) {
@@ -261,4 +260,37 @@ pub fn get_game_sse(widget_id: Key, game_id: &str, emitter: Emitter, end_connect
             }
         }
     });
+}
+
+pub fn get_player(widget_id: Key, emitter: Emitter, player_token: String) {
+    thread::spawn(move || {
+        if player_token.is_empty() {
+            eprintln!("Missing player token");
+            return;
+        }
+
+        let url = format!("{BASE_API_URL}/api/players");
+        let client = Client::new();
+        match client
+            .get(url)
+            .header("token", player_token)
+            .send()
+            .unwrap()
+            .json::<DBPlayer>()
+        {
+            Ok(player) => {
+                emitter
+                    .try_emit(widget_id, AppMessage::GotPlayerFromServer(player))
+                    .ok();
+            }
+            Err(error) => {
+                eprintln!("{error:?}");
+            }
+        };
+    });
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DBPlayer {
+    pub speed: i32,
 }

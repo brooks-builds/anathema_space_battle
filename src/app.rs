@@ -1,7 +1,8 @@
-use std::sync::mpsc::{Receiver, Sender, channel};
-
 use crate::{
-    api::{self, CreateGameResponse, GameStream, JoinGameResponse, LobbyStream, Ship, ShipColor},
+    api::{
+        self, CreateGameResponse, DBPlayer, GameStream, JoinGameResponse, LobbyStream, Ship,
+        ShipColor,
+    },
     game::Game,
     pages::lobby::LobbyPage,
     router::Route,
@@ -11,6 +12,7 @@ use anathema::{
     state::{List, State, Value},
 };
 use bb_anathema_components::BBAppComponent;
+use std::sync::mpsc::{Sender, channel};
 
 #[derive(Debug, Default)]
 pub struct App(AppData);
@@ -36,6 +38,7 @@ pub struct AppState {
     possible_ship_max_speeds: Value<List<i32>>,
     player_id: Value<String>,
     turn_number: Value<i32>,
+    player_token: Value<String>,
 }
 
 #[derive(Debug, Default)]
@@ -92,9 +95,10 @@ impl Component for App {
                 self.0.game_id = Some(game_created_data.game_id.clone());
                 state.game_status.set(game_created_data.status);
                 self.0.player_id = Some(game_created_data.player_id.clone());
-                self.0.token = Some(game_created_data.token);
+                self.0.token = Some(game_created_data.token.clone());
                 state.game_code.set(game_created_data.game_code);
                 state.player_id.set(game_created_data.player_id);
+                state.player_token.set(game_created_data.token);
 
                 let (sender, receiver) = channel();
                 self.0.lobby_sse_sender = Some(sender);
@@ -115,10 +119,11 @@ impl Component for App {
                 );
             }
             AppMessage::GameJoined(join_game_response) => {
-                self.0.token = Some(join_game_response.token);
+                self.0.token = Some(join_game_response.token.clone());
                 self.0.game_id = Some(join_game_response.game_id.clone());
                 state.current_route.set(Route::Lobby.into());
                 state.player_id.set(join_game_response.player_id);
+                state.player_token.set(join_game_response.token);
 
                 let (sender, receiver) = channel();
                 self.0.lobby_sse_sender = Some(sender);
@@ -228,6 +233,7 @@ impl Component for App {
 
                 state.turn_number.set(turn);
             }
+            AppMessage::GotPlayerFromServer(_) => unreachable!(),
         }
     }
 
@@ -281,4 +287,5 @@ pub enum AppMessage {
     Quit,
     GameStarting,
     GameUpdate(GameStream),
+    GotPlayerFromServer(DBPlayer),
 }

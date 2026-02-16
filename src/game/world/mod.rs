@@ -17,6 +17,8 @@ pub struct World {
     pub player_names: Vec<String>,
     pub player_max_speeds: Vec<i32>,
     pub players_ready: Vec<bool>,
+    pub player_ship_classnames: Vec<String>,
+    pub host_id: String,
 }
 
 impl World {
@@ -39,6 +41,7 @@ impl World {
         self.player_names.push(player.name);
         self.player_max_speeds.push(player.ship_max_speed);
         self.players_ready.push(player.ready);
+        self.player_ship_classnames.push(player.ship_classname);
     }
 
     pub fn no_players(&self) -> bool {

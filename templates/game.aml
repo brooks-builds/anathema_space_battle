@@ -8,6 +8,9 @@ vstack
 		text " x "
 		text state.height
 	hstack
+		text "Player token: "
+		text attributes.player_token
+	hstack
 		border [width: state.width * 2 + 1, height: state.height]
 			canvas
 		vstack
@@ -15,15 +18,24 @@ vstack
 			for player_id in state.player_ids
 				if player_id == attributes.player_id
 					vstack
+						if player_id == state.host_id
+							text "Hosting"
 						if state.players_ready[loop]
 							text [foreground: "green"] "ready"
 						else
 							text [foreground: "red"] "Complete actions to take your turn"
 						hstack
 							text "Ship: "
-							text [foreground: state.player_colors[loop]] state.player_ships[loop]
+							container [foreground: state.player_colors[loop]]
+								hstack
+									text state.player_ships[loop]
+									text " ("
+									text state.player_ship_classnames[loop]
+									text ")"
 						hstack
-							text "Max Speed: "
+							text "Speed: "
+							text state.player_speed
+							text " / "
 							text state.player_max_speeds[loop]
 						hstack
 							text "Position: "
@@ -43,6 +55,11 @@ vstack
 								text state.player_names[loop]
 								text ": "
 								text [foreground: state.player_colors[loop]] state.player_ships[loop]
+								if player_id == state.host_id
+									text " Hosting"
+							hstack
+								text "Ship Class: "
+								text state.player_ship_classnames[loop]
 							hstack
 								text "Max Speed: "
 								text state.player_max_speeds[loop]
