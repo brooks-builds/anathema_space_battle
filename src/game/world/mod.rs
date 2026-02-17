@@ -1,6 +1,9 @@
 mod vector;
 
-use crate::{api::GameStreamPlayer, game::world::vector::Vector};
+use crate::{
+    api::{DBPlayer, GameStreamPlayer},
+    game::world::vector::Vector,
+};
 use anathema::{default_widgets::Canvas, state::Color, widgets::Style};
 use serde::Serialize;
 use std::str::FromStr;
@@ -21,6 +24,8 @@ pub struct World {
     pub player_ship_classnames: Vec<String>,
     pub host_id: String,
     pub turn: i32,
+    pub player_speed: i32,
+    pub possible_destinations: Vec<Vector>,
 }
 
 impl World {
@@ -63,7 +68,7 @@ impl World {
         }
     }
 
-    pub fn update_players(&mut self, players: Vec<GameStreamPlayer>) {
+    pub fn update_players_ready(&mut self, players: Vec<GameStreamPlayer>) {
         for player in players {
             let Some(player_index) = self.find_player_index(&player.id) else {
                 continue;
@@ -81,5 +86,10 @@ impl World {
         }
 
         None
+    }
+
+    pub fn player_updated(&mut self, player: DBPlayer) {
+        self.player_speed = player.speed;
+        // update the player possible destinations
     }
 }

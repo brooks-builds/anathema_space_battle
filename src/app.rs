@@ -9,7 +9,7 @@ use crate::{
     router::Route,
 };
 use anathema::{
-    component::Component,
+    component::{Component, Context},
     state::{List, State, Value},
 };
 use bb_anathema_components::BBAppComponent;

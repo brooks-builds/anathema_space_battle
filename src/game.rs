@@ -37,6 +37,7 @@ pub struct GameState {
     host_id: Value<String>,
     command_speed_change: Value<i8>,
     can_take_turn: Value<bool>,
+    setting_destination: Value<bool>,
 }
 
 impl Component for Game {
@@ -136,7 +137,7 @@ impl Component for Game {
                         .by_name(App::ident())
                         .send(AppMessage::Log(format!("world initiated: {world:#?}")));
                 } else {
-                    world.update_players(game_stream.players);
+                    world.update_players_ready(game_stream.players);
 
                     state
                         .players_ready
@@ -206,7 +207,37 @@ impl Component for Game {
                 state.can_take_turn.set(false);
                 state.command_speed_change.set(0);
             }
+            "toggle_set_destination" => {
+                let setting_destination = *state.setting_destination.to_ref();
+
+                state.setting_destination.set(!setting_destination);
+            }
             _ => unreachable!(),
+        }
+    }
+
+    fn on_mouse(
+        &mut self,
+        mouse: anathema::component::MouseEvent,
+        _state: &mut Self::State,
+        mut children: anathema::component::Children<'_, '_>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
+    ) {
+        if mouse.right_up() {
+            let position = mouse.pos();
+            let log_message = format!("Clicked at: {position:#?}");
+
+            children.elements().at_position(position).each(|el, _attr| {
+                if let Some(canvas) = el.try_to::<Canvas>() {
+                    let local_position = canvas.translate(position);
+                    let log_message = format!("Clicked on coordinates: {local_position:#?}");
+
+                    context
+                        .components
+                        .by_name(App::ident())
+                        .send(AppMessage::Log(log_message));
+                };
+            });
         }
     }
 }
