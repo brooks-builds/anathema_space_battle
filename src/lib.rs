@@ -1,6 +1,7 @@
 mod api;
 mod app;
 mod game;
+mod logger;
 mod pages;
 mod router;
 

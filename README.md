@@ -32,4 +32,10 @@
 - [x] In the lobby, display max ship speed for each ship
 - [x] Turn number is displayed in the game
 - [x] Players can see their current speed
-- [ ] Players can set their speed as part of a new turn
+- [x] Players can set their speed as part of a new turn
+- [ ] Players can move based on their distance
+  - [ ] Move button that when pressed highlights legal destinations
+  - [ ] Clicking on legal destination, set command move_to position and stops highlight
+  - [ ] Submitting command also sends move to position
+  - [ ] Upon new turn, ship is set to new turn
+- [ ] Upon new turn, ships move smoothly towards new destinations

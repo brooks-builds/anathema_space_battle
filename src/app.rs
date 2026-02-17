@@ -3,7 +3,8 @@ use crate::{
         self, CreateGameResponse, DBPlayer, GameStream, JoinGameResponse, LobbyStream, Ship,
         ShipColor,
     },
-    game::Game,
+    game::{Game, TurnCommand},
+    logger,
     pages::lobby::LobbyPage,
     router::Route,
 };
@@ -50,6 +51,7 @@ pub struct AppData {
     possible_ships: Vec<Ship>,
     lobby_sse_sender: Option<Sender<()>>,
     game_sse_sender: Option<Sender<()>>,
+    pub player_name: Option<String>,
 }
 
 impl Component for App {
@@ -81,8 +83,10 @@ impl Component for App {
     ) {
         match message {
             AppMessage::NameSet(name) => {
-                state.player_name.set(name);
+                logger::log(format!("Setting name to {name}"), &name);
+                state.player_name.set(name.clone());
                 state.current_route.set(Route::Start.into());
+                self.0.player_name = Some(name);
             }
             AppMessage::CreateGame => {
                 let key = context.widget_id;
@@ -155,12 +159,21 @@ impl Component for App {
                     .iter()
                     .find(|color| color.name == color_name)
                 else {
-                    dbg!("Changing to a ship color that we don't have", color_name);
+                    let message =
+                        format!("Changing to a ship color that we don't have: {color_name}");
+                    context
+                        .components
+                        .by_name(App::ident())
+                        .send(AppMessage::Log(message));
                     return;
                 };
                 let color_id = &color.id;
                 let Some(token) = &self.0.token else {
-                    dbg!("attempting to change ship color without a token");
+                    let message = String::from("attempting to change ship color without a token");
+                    context
+                        .components
+                        .by_name(App::ident())
+                        .send(AppMessage::Log(message));
                     return;
                 };
 
@@ -225,15 +238,57 @@ impl Component for App {
             }
             AppMessage::GameUpdate(game_stream) => {
                 let turn = game_stream.game.turn_number;
+                let previous_turn = *state.turn_number.to_ref();
 
                 context
                     .components
                     .by_name(Game::ident())
                     .send(AppMessage::GameUpdate(game_stream));
 
-                state.turn_number.set(turn);
+                if turn > previous_turn {
+                    state.turn_number.set(turn);
+                    context
+                        .components
+                        .by_name(Self::ident())
+                        .send(AppMessage::GetPlayerFromServer);
+                }
             }
-            AppMessage::GotPlayerFromServer(_) => unreachable!(),
+            AppMessage::GotPlayerFromServer(player) => context
+                .components
+                .by_name(Game::ident())
+                .send(AppMessage::GotPlayerFromServer(player)),
+            AppMessage::SubmitTurnCommand(command) => {
+                let Some(game_id) = &self.0.game_id else {
+                    return;
+                };
+                let Some(token) = &self.0.token else {
+                    return;
+                };
+                let app_id = context.widget_id;
+                let emitter = context.emitter.clone();
+
+                api::submit_game_turn(app_id, emitter, token, game_id, command);
+            }
+            AppMessage::GameTurnSubmitted => context
+                .components
+                .by_name(Game::ident())
+                .send(AppMessage::GameTurnSubmitted),
+            AppMessage::GetPlayerFromServer => {
+                let widget_id = context.widget_id;
+                let emitter = context.emitter.clone();
+                let Some(player_token) = &self.0.token else {
+                    return;
+                };
+
+                api::get_player(widget_id, emitter, player_token.clone());
+            }
+            AppMessage::Log(message) => {
+                let Some(player_name) = &self.0.player_name else {
+                    return;
+                };
+
+                logger::log(message, player_name);
+            }
         }
     }
 
@@ -288,4 +343,8 @@ pub enum AppMessage {
     GameStarting,
     GameUpdate(GameStream),
     GotPlayerFromServer(DBPlayer),
+    SubmitTurnCommand(TurnCommand),
+    GameTurnSubmitted,
+    GetPlayerFromServer,
+    Log(String),
 }

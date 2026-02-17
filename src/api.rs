@@ -1,7 +1,7 @@
-use crate::app::AppMessage;
+use crate::{app::AppMessage, game::TurnCommand};
 use anathema::{component::Emitter, store::slab::Key};
 use reqwest::blocking::Client;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{
     io::{BufRead, BufReader, Read},
     sync::mpsc::Receiver,
@@ -293,4 +293,39 @@ pub fn get_player(widget_id: Key, emitter: Emitter, player_token: String) {
 #[derive(Debug, Deserialize)]
 pub struct DBPlayer {
     pub speed: i32,
+}
+
+pub fn submit_game_turn(
+    widget_id: Key,
+    emitter: Emitter,
+    token: &str,
+    game_id: &str,
+    turn_command: TurnCommand,
+) {
+    let url = format!("{BASE_API_URL}/api/games/{game_id}/command");
+    let token = token.to_owned();
+
+    thread::spawn(move || {
+        let client = Client::new();
+        let body = SubmitTurnCommandBody {
+            speed_change: turn_command.speed_change,
+        };
+        let response = client
+            .post(url)
+            .header("token", token)
+            .json(&body)
+            .send()
+            .unwrap();
+
+        if response.status().is_success() {
+            emitter
+                .try_emit(widget_id, AppMessage::GameTurnSubmitted)
+                .ok();
+        }
+    });
+}
+
+#[derive(Debug, Serialize)]
+pub struct SubmitTurnCommandBody {
+    pub speed_change: i8,
 }

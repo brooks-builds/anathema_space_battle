@@ -1,17 +1,18 @@
 mod vector;
 
-use std::str::FromStr;
-
 use crate::{api::GameStreamPlayer, game::world::vector::Vector};
 use anathema::{default_widgets::Canvas, state::Color, widgets::Style};
+use serde::Serialize;
+use std::str::FromStr;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct World {
     pub width: i32,
     pub height: i32,
     pub cell_width: i32,
     pub player_characters: Vec<char>,
     pub player_positions: Vec<Vector>,
+    #[serde(skip)]
     pub player_styles: Vec<Style>,
     pub player_ids: Vec<String>,
     pub player_names: Vec<String>,
@@ -19,6 +20,7 @@ pub struct World {
     pub players_ready: Vec<bool>,
     pub player_ship_classnames: Vec<String>,
     pub host_id: String,
+    pub turn: i32,
 }
 
 impl World {
@@ -59,5 +61,25 @@ impl World {
                 (player_position.x * self.cell_width, player_position.y),
             );
         }
+    }
+
+    pub fn update_players(&mut self, players: Vec<GameStreamPlayer>) {
+        for player in players {
+            let Some(player_index) = self.find_player_index(&player.id) else {
+                continue;
+            };
+
+            self.players_ready[player_index] = player.ready;
+        }
+    }
+
+    fn find_player_index(&self, player_id: &str) -> Option<usize> {
+        for (index, id) in self.player_ids.iter().enumerate() {
+            if player_id == id {
+                return Some(index);
+            }
+        }
+
+        None
     }
 }

@@ -30,13 +30,18 @@ impl Component for LobbyPage {
         &mut self,
         _state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         let Some(_player_name) = context
             .attribute("player_name")
             .and_then(|value| value.as_str())
         else {
-            dbg!("got to the lobby without a player name");
+            context
+                .components
+                .by_name(App::ident())
+                .send(AppMessage::Log(
+                    "got to the lobby without a name".to_string(),
+                ));
             return;
         };
         if let Some(_game_code) = context

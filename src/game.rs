@@ -1,6 +1,9 @@
 mod world;
 
-use crate::{api, app::AppMessage, game::world::World};
+use crate::{
+    app::{App, AppMessage},
+    game::world::World,
+};
 use anathema::{
     component::Component,
     default_widgets::Canvas,
@@ -33,6 +36,7 @@ pub struct GameState {
     player_ship_classnames: Value<List<String>>,
     host_id: Value<String>,
     command_speed_change: Value<i8>,
+    can_take_turn: Value<bool>,
 }
 
 impl Component for Game {
@@ -62,11 +66,20 @@ impl Component for Game {
         message: Self::Message,
         state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        mut _context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         match message {
             AppMessage::GameUpdate(game_stream) => {
                 let world = &mut self.0;
+
+                if world.turn < game_stream.game.turn_number {
+                    world.turn = game_stream.game.turn_number;
+                    state.can_take_turn.set(true);
+                    context
+                        .components
+                        .by_name(App::ident())
+                        .send(AppMessage::Log(format!("{world:#?}")));
+                }
 
                 if world.host_id != game_stream.game.host_id {
                     world.host_id = game_stream.game.host_id;
@@ -117,10 +130,27 @@ impl Component for Game {
                     state.player_ship_classnames.set(List::from_iter(
                         world.player_ship_classnames.iter().map(ToOwned::to_owned),
                     ));
+
+                    context
+                        .components
+                        .by_name(App::ident())
+                        .send(AppMessage::Log(format!("world initiated: {world:#?}")));
+                } else {
+                    world.update_players(game_stream.players);
+
+                    state
+                        .players_ready
+                        .set(List::from_iter(world.players_ready.iter().copied()));
                 }
             }
             AppMessage::GotPlayerFromServer(db_player) => {
                 state.player_speed.set(db_player.speed);
+            }
+            AppMessage::GameTurnSubmitted => {
+                context
+                    .components
+                    .by_name(App::ident())
+                    .send(AppMessage::GetPlayerFromServer);
             }
             _ => unreachable!(),
         }
@@ -128,37 +158,35 @@ impl Component for Game {
 
     fn on_mount(
         &mut self,
-        _state: &mut Self::State,
+        state: &mut Self::State,
         mut _children: anathema::component::Children<'_, '_>,
-        context: anathema::component::Context<'_, '_, Self::State>,
+        mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
-        if let Some(token) = context
-            .attribute("player_token")
-            .and_then(|value| value.as_str())
-        {
-            api::get_player(context.widget_id, context.emitter.clone(), token.to_owned());
-        }
+        context
+            .components
+            .by_name(App::ident())
+            .send(AppMessage::GetPlayerFromServer);
+        state.can_take_turn.set(true);
     }
 
     fn on_event(
         &mut self,
         event: &mut anathema::component::UserEvent<'_>,
         state: &mut Self::State,
-        mut children: anathema::component::Children<'_, '_>,
+        mut _children: anathema::component::Children<'_, '_>,
         mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         match event.name() {
             "decrease_speed" => {
                 let mut current_speed_change = *state.command_speed_change.to_ref();
                 let current_speed = *state.player_speed.to_ref();
+                let min_speed_change = if current_speed == 0 { 0 } else { -1 };
 
-                if current_speed > 0 {
-                    current_speed_change -= 1;
-                }
+                current_speed_change -= 1;
 
                 state
                     .command_speed_change
-                    .set(current_speed_change.clamp(-1, 1));
+                    .set(current_speed_change.clamp(min_speed_change, 1));
             }
             "reset_speed_change" => state.command_speed_change.set(0),
             "increase_speed" => {
@@ -169,6 +197,14 @@ impl Component for Game {
                 state
                     .command_speed_change
                     .set(current_speed_change.clamp(-1, 1));
+            }
+            "submit_command" => {
+                let speed_change = *state.command_speed_change.to_ref();
+                let message = AppMessage::SubmitTurnCommand(TurnCommand { speed_change });
+
+                context.components.by_name(App::ident()).send(message);
+                state.can_take_turn.set(false);
+                state.command_speed_change.set(0);
             }
             _ => unreachable!(),
         }
@@ -188,4 +224,9 @@ impl BBAppComponent for Game {
 
         Ok(())
     }
+}
+
+#[derive(Debug)]
+pub struct TurnCommand {
+    pub speed_change: i8,
 }
