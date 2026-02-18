@@ -293,6 +293,7 @@ pub fn get_player(widget_id: Key, emitter: Emitter, player_token: String) {
 #[derive(Debug, Deserialize)]
 pub struct DBPlayer {
     pub speed: i32,
+    pub id: String,
 }
 
 pub fn submit_game_turn(

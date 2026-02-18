@@ -146,6 +146,15 @@ impl Component for Game {
             }
             AppMessage::GotPlayerFromServer(db_player) => {
                 state.player_speed.set(db_player.speed);
+                self.0.player_updated(db_player);
+
+                context
+                    .components
+                    .by_name(App::ident())
+                    .send(AppMessage::Log(format!(
+                        "Calculated possible destinations for the player: \n{:#?}",
+                        self.0.possible_destinations
+                    )));
             }
             AppMessage::GameTurnSubmitted => {
                 context
@@ -191,13 +200,17 @@ impl Component for Game {
             }
             "reset_speed_change" => state.command_speed_change.set(0),
             "increase_speed" => {
+                dbg!("increasing speed");
                 let mut current_speed_change = *state.command_speed_change.to_ref();
 
                 current_speed_change += 1;
+                current_speed_change = current_speed_change.clamp(-1, 1);
 
-                state
-                    .command_speed_change
-                    .set(current_speed_change.clamp(-1, 1));
+                state.command_speed_change.set(current_speed_change);
+                log(
+                    format!("Increasing speed to {current_speed_change}"),
+                    &mut context,
+                );
             }
             "submit_command" => {
                 let speed_change = *state.command_speed_change.to_ref();
@@ -223,9 +236,8 @@ impl Component for Game {
         mut children: anathema::component::Children<'_, '_>,
         mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
-        if mouse.right_up() {
+        if mouse.left_up() {
             let position = mouse.pos();
-            let log_message = format!("Clicked at: {position:#?}");
 
             children.elements().at_position(position).each(|el, _attr| {
                 if let Some(canvas) = el.try_to::<Canvas>() {
@@ -260,4 +272,11 @@ impl BBAppComponent for Game {
 #[derive(Debug)]
 pub struct TurnCommand {
     pub speed_change: i8,
+}
+
+pub fn log<T: State>(message: String, context: &mut anathema::component::Context<'_, '_, T>) {
+    context
+        .components
+        .by_name(App::ident())
+        .send(AppMessage::Log(message));
 }
