@@ -33,9 +33,14 @@
 - [x] Turn number is displayed in the game
 - [x] Players can see their current speed
 - [x] Players can set their speed as part of a new turn
-- [ ] Players can move based on their distance
-  - [ ] Move button that when pressed highlights legal destinations
-  - [ ] Clicking on legal destination, set command move_to position and stops highlight
-  - [ ] Submitting command also sends move to position
-  - [ ] Upon new turn, ship is set to new turn
+- [x] Players can move based on their distance
+  - [x] Move button that when pressed highlights legal destinations
+  - [x] Clicking on legal destination, set command move_to position and stops highlight
+  - [x] Submitting command also sends move to position
+  - [x] Upon new turn, ship is set to new turn
+- [ ] Players can fire a torpedo
+  - [ ] Button to set firing destination
+
+### Polish
+
 - [ ] Upon new turn, ships move smoothly towards new destinations

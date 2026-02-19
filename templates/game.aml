@@ -49,6 +49,13 @@ vstack
 					text state.command_speed_change
 					text " -> "
 					text state.player_speed + state.command_speed_change
+				if state.command_destination_set
+					hstack
+						text "Flying to: ("
+						text state.command_destination_x
+						text ", "
+						text state.command_destination_y
+						text ")"
 				hstack
 					spacer
 					text "Change Speed: "

@@ -310,6 +310,9 @@ pub fn submit_game_turn(
         let client = Client::new();
         let body = SubmitTurnCommandBody {
             speed_change: turn_command.speed_change,
+            destination: turn_command
+                .destination
+                .map(|destination| (destination.x, destination.y)),
         };
         let response = client
             .post(url)
@@ -329,4 +332,5 @@ pub fn submit_game_turn(
 #[derive(Debug, Serialize)]
 pub struct SubmitTurnCommandBody {
     pub speed_change: i8,
+    pub destination: Option<(i32, i32)>,
 }

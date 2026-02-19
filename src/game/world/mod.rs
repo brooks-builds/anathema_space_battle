@@ -1,7 +1,7 @@
-mod vector;
+pub mod vector;
 
 use crate::{
-    api::{DBPlayer, GameStreamPlayer},
+    api::{DBPlayer, GameStream, GameStreamPlayer},
     game::world::vector::Vector,
 };
 use anathema::{default_widgets::Canvas, state::Color, widgets::Style};
@@ -26,6 +26,7 @@ pub struct World {
     pub player_speed: i32,
     pub possible_destinations: Vec<Vector>,
     pub player_id: String,
+    pub display_possible_destinations: bool,
 }
 
 impl World {
@@ -55,6 +56,16 @@ impl World {
     }
 
     pub fn draw(&self, canvas: &mut Canvas) {
+        if self.display_possible_destinations {
+            for Vector { x, y } in &self.possible_destinations {
+                let character = ' ';
+                let mut style = Style::new();
+
+                style.set_bg(Color::DarkGrey);
+                canvas.put(character, style, (*x, *y));
+            }
+        }
+
         for (index, player_character) in self.player_characters.iter().enumerate() {
             let player_position = &self.player_positions[index];
             let style = self.player_styles[index];
@@ -113,5 +124,15 @@ impl World {
         }
 
         None
+    }
+
+    pub fn update_after_turn(&mut self, game: &GameStream) {
+        for player in game.players.iter() {
+            let Some(index) = self.find_player_index(&player.id) else {
+                continue;
+            };
+
+            self.player_positions[index] = Vector::new(player.position_x, player.position_y);
+        }
     }
 }

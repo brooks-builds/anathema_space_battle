@@ -2,7 +2,7 @@ mod world;
 
 use crate::{
     app::{App, AppMessage},
-    game::world::World,
+    game::world::{World, vector::Vector},
 };
 use anathema::{
     component::Component,
@@ -38,6 +38,9 @@ pub struct GameState {
     command_speed_change: Value<i8>,
     can_take_turn: Value<bool>,
     setting_destination: Value<bool>,
+    command_destination_x: Value<i32>,
+    command_destination_y: Value<i32>,
+    command_destination_set: Value<bool>,
 }
 
 impl Component for Game {
@@ -76,10 +79,8 @@ impl Component for Game {
                 if world.turn < game_stream.game.turn_number {
                     world.turn = game_stream.game.turn_number;
                     state.can_take_turn.set(true);
-                    context
-                        .components
-                        .by_name(App::ident())
-                        .send(AppMessage::Log(format!("{world:#?}")));
+                    log(format!("{world:#?}"), &mut context);
+                    world.update_after_turn(&game_stream);
                 }
 
                 if world.host_id != game_stream.game.host_id {
@@ -188,6 +189,7 @@ impl Component for Game {
     ) {
         match event.name() {
             "decrease_speed" => {
+                dbg!("decreasing speed");
                 let mut current_speed_change = *state.command_speed_change.to_ref();
                 let current_speed = *state.player_speed.to_ref();
                 let min_speed_change = if current_speed == 0 { 0 } else { -1 };
@@ -200,7 +202,6 @@ impl Component for Game {
             }
             "reset_speed_change" => state.command_speed_change.set(0),
             "increase_speed" => {
-                dbg!("increasing speed");
                 let mut current_speed_change = *state.command_speed_change.to_ref();
 
                 current_speed_change += 1;
@@ -214,16 +215,34 @@ impl Component for Game {
             }
             "submit_command" => {
                 let speed_change = *state.command_speed_change.to_ref();
-                let message = AppMessage::SubmitTurnCommand(TurnCommand { speed_change });
+                let destination = if *state.command_destination_set.to_ref() {
+                    let x = state.command_destination_x.to_ref();
+                    let y = state.command_destination_y.to_ref();
+                    Some(Vector::new(*x, *y))
+                } else {
+                    None
+                };
+                let message = AppMessage::SubmitTurnCommand(TurnCommand {
+                    speed_change,
+                    destination,
+                });
 
                 context.components.by_name(App::ident()).send(message);
                 state.can_take_turn.set(false);
                 state.command_speed_change.set(0);
+                state.setting_destination.set(false);
+                self.0.display_possible_destinations = false;
+                state.command_destination_set.set(false);
             }
             "toggle_set_destination" => {
-                let setting_destination = *state.setting_destination.to_ref();
+                let setting_destination = !(*state.setting_destination.to_ref());
 
-                state.setting_destination.set(!setting_destination);
+                state.setting_destination.set(setting_destination);
+                self.0.display_possible_destinations = setting_destination;
+
+                if !setting_destination {
+                    state.command_destination_set.set(false);
+                }
             }
             _ => unreachable!(),
         }
@@ -232,24 +251,31 @@ impl Component for Game {
     fn on_mouse(
         &mut self,
         mouse: anathema::component::MouseEvent,
-        _state: &mut Self::State,
+        state: &mut Self::State,
         mut children: anathema::component::Children<'_, '_>,
         mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
         if mouse.left_up() {
-            let position = mouse.pos();
+            children
+                .elements()
+                .at_position(mouse.pos())
+                .by_tag("canvas")
+                .each(|el, _attr| {
+                    let Some(canvas) = el.try_to::<Canvas>() else {
+                        return;
+                    };
 
-            children.elements().at_position(position).each(|el, _attr| {
-                if let Some(canvas) = el.try_to::<Canvas>() {
-                    let local_position = canvas.translate(position);
-                    let log_message = format!("Clicked on coordinates: {local_position:#?}");
+                    let coords = canvas.translate(mouse.pos());
 
-                    context
-                        .components
-                        .by_name(App::ident())
-                        .send(AppMessage::Log(log_message));
-                };
-            });
+                    state.command_destination_x.set(coords.x as i32);
+                    state.command_destination_y.set(coords.y as i32);
+                    state.command_destination_set.set(true);
+
+                    log(
+                        format!("Mouse clicked in canvas on cell: {coords:#?}"),
+                        &mut context,
+                    );
+                });
         }
     }
 }
@@ -272,6 +298,7 @@ impl BBAppComponent for Game {
 #[derive(Debug)]
 pub struct TurnCommand {
     pub speed_change: i8,
+    pub destination: Option<Vector>,
 }
 
 pub fn log<T: State>(message: String, context: &mut anathema::component::Context<'_, '_, T>) {
