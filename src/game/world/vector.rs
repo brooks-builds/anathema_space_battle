@@ -2,7 +2,7 @@ use std::ops::Sub;
 
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Default)]
 pub struct Vector {
     pub x: i32,
     pub y: i32,

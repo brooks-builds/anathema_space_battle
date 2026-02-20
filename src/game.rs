@@ -253,6 +253,7 @@ impl Component for Game {
                 let setting_torpedo_target = !(*state.setting_torpedo_target.to_ref());
 
                 state.setting_torpedo_target.set(setting_torpedo_target);
+                self.0.setting_torpedo_target = setting_torpedo_target;
             }
             _ => unreachable!(),
         }
@@ -265,7 +266,18 @@ impl Component for Game {
         mut children: anathema::component::Children<'_, '_>,
         mut context: anathema::component::Context<'_, '_, Self::State>,
     ) {
-        if mouse.left_up() {
+        let world = &mut self.0;
+
+        if world.setting_torpedo_target {
+            let mouse_position = Vector::new(mouse.pos().x, mouse.pos().y);
+
+            world.mouse_position = mouse_position;
+        }
+
+        if world.display_possible_destinations
+            && mouse.left_up()
+            && !(*state.command_destination_set.to_ref())
+        {
             children
                 .elements()
                 .at_position(mouse.pos())

@@ -42,6 +42,7 @@
   - [x] Players can see how many torpedoes a ship has when selecting a ship in the lobby
   - [x] Players can see how many torpedoes they have left for their own ship
   - [x] Button to set firing destination
+  - [x] While in target setting mode, the cell in the canvas highlights so that I can see where I'll be firing at
 
 ### Polish
 

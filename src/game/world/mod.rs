@@ -4,7 +4,7 @@ use crate::{
     api::{DBPlayer, GameStream, GameStreamPlayer},
     game::world::vector::Vector,
 };
-use anathema::{default_widgets::Canvas, state::Color, widgets::Style};
+use anathema::{default_widgets::Canvas, geometry::Pos, state::Color, widgets::Style};
 use serde::Serialize;
 use std::str::FromStr;
 
@@ -27,6 +27,8 @@ pub struct World {
     pub possible_destinations: Vec<Vector>,
     pub player_id: String,
     pub display_possible_destinations: bool,
+    pub setting_torpedo_target: bool,
+    pub mouse_position: Vector,
 }
 
 impl World {
@@ -75,6 +77,16 @@ impl World {
                 style,
                 (player_position.x, player_position.y),
             );
+        }
+
+        if self.setting_torpedo_target {
+            let character = ' ';
+            let mut style = Style::new();
+            let position = canvas.translate(Pos::new(self.mouse_position.x, self.mouse_position.y));
+
+            style.set_bg(Color::LightRed);
+
+            canvas.put(character, style, position);
         }
     }
 
