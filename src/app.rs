@@ -37,6 +37,7 @@ pub struct AppState {
     possible_ship_names: Value<List<String>>,
     possible_ship_chars: Value<List<char>>,
     possible_ship_max_speeds: Value<List<i32>>,
+    possible_ship_torpedoes: Value<List<i32>>,
     player_id: Value<String>,
     turn_number: Value<i32>,
     player_token: Value<String>,
@@ -185,12 +186,16 @@ impl Component for App {
                 let ship_names = ships.iter().map(|ship| ship.class_name.clone());
                 let ship_chars = ships.iter().map(|ship| ship.character);
                 let ship_max_speeds = ships.iter().map(|ship| ship.max_speed);
+                let ship_max_torpedo_count = ships.iter().map(|ship| ship.max_torpedo_count);
 
                 state.possible_ship_names.set(List::from_iter(ship_names));
                 state.possible_ship_chars.set(List::from_iter(ship_chars));
                 state
                     .possible_ship_max_speeds
                     .set(List::from_iter(ship_max_speeds));
+                state
+                    .possible_ship_torpedoes
+                    .set(List::from_iter(ship_max_torpedo_count));
             }
             AppMessage::ChangeShip(ship_name) => {
                 let Some(ship) = self

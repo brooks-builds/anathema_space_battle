@@ -39,6 +39,8 @@
   - [x] Submitting command also sends move to position
   - [x] Upon new turn, ship is set to new turn
 - [ ] Players can fire a torpedo
+  - [x] Players can see how many torpedoes a ship has when selecting a ship in the lobby
+  - [ ] Players can see how many torpedoes they have left for their own ship
   - [ ] Button to set firing destination
 
 ### Polish

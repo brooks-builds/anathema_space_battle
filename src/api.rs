@@ -156,6 +156,7 @@ pub struct Ship {
     pub class_name: String,
     pub character: char,
     pub max_speed: i32,
+    pub max_torpedo_count: i32,
 }
 
 pub fn get_possible_ships(widget_id: Key, emitter: Emitter) {
