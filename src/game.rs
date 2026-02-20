@@ -257,6 +257,11 @@ impl Component for Game {
 
                 state.setting_torpedo_target.set(setting_torpedo_target);
                 self.0.setting_torpedo_target = setting_torpedo_target;
+
+                if !setting_torpedo_target {
+                    state.torpedo_target_set.set(false);
+                    self.0.torpedo_target = None;
+                }
             }
             _ => unreachable!(),
         }

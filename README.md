@@ -44,7 +44,7 @@
   - [x] Button to set firing destination
   - [x] While in target setting mode, the cell in the canvas highlights so that I can see where I'll be firing at
   - [x] After setting a target to fire at, the cell remains lit up and the target coordinates are displayed
-  - [ ] Can cancel setting the target
+  - [x] Can cancel setting the target
 
 ### Polish
 
