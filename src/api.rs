@@ -295,6 +295,7 @@ pub fn get_player(widget_id: Key, emitter: Emitter, player_token: String) {
 pub struct DBPlayer {
     pub speed: i32,
     pub id: String,
+    pub torpedo_count: i32,
 }
 
 pub fn submit_game_turn(

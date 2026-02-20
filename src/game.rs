@@ -41,6 +41,7 @@ pub struct GameState {
     command_destination_x: Value<i32>,
     command_destination_y: Value<i32>,
     command_destination_set: Value<bool>,
+    player_torpedoes_remaining: Value<i32>,
 }
 
 impl Component for Game {
@@ -147,6 +148,9 @@ impl Component for Game {
             }
             AppMessage::GotPlayerFromServer(db_player) => {
                 state.player_speed.set(db_player.speed);
+                state
+                    .player_torpedoes_remaining
+                    .set(db_player.torpedo_count);
                 self.0.player_updated(db_player);
 
                 context

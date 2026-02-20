@@ -42,6 +42,9 @@ vstack
 							text state.player_position_xs[loop]
 							text ", "
 							text state.player_position_ys[loop]
+						hstack
+							text "Torpedoes: "
+							text state.player_torpedoes_remaining
 			@BBHeading [text: "Turn"]
 			if state.can_take_turn
 				hstack
