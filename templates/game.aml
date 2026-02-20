@@ -72,6 +72,10 @@ vstack
 					@BBButton (click->toggle_set_destination) [label: "Cancel Set Destination"]
 				else
 					@BBButton (click->toggle_set_destination) [label: "Set Destination"]
+				if state.setting_torpedo_target
+					@BBButton (click->toggle_set_torpedo_target) [label: "Cancel Torpedo Target"]
+				else
+					@BBButton (click->toggle_set_torpedo_target) [label: "Set Torpedo Target"]
 				@BBButton (click->submit_command) [label: "Submit Command"]
 			else
 				text "Command Submitted, waiting for other players"

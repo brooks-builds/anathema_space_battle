@@ -42,6 +42,7 @@ pub struct GameState {
     command_destination_y: Value<i32>,
     command_destination_set: Value<bool>,
     player_torpedoes_remaining: Value<i32>,
+    setting_torpedo_target: Value<bool>,
 }
 
 impl Component for Game {
@@ -247,6 +248,11 @@ impl Component for Game {
                 if !setting_destination {
                     state.command_destination_set.set(false);
                 }
+            }
+            "toggle_set_torpedo_target" => {
+                let setting_torpedo_target = !(*state.setting_torpedo_target.to_ref());
+
+                state.setting_torpedo_target.set(setting_torpedo_target);
             }
             _ => unreachable!(),
         }
