@@ -29,6 +29,7 @@ pub struct World {
     pub display_possible_destinations: bool,
     pub setting_torpedo_target: bool,
     pub mouse_position: Vector,
+    pub torpedo_target: Option<Vector>,
 }
 
 impl World {
@@ -79,10 +80,20 @@ impl World {
             );
         }
 
-        if self.setting_torpedo_target {
+        if self.setting_torpedo_target && self.torpedo_target.is_none() {
             let character = ' ';
             let mut style = Style::new();
             let position = canvas.translate(Pos::new(self.mouse_position.x, self.mouse_position.y));
+
+            style.set_bg(Color::LightRed);
+
+            canvas.put(character, style, position);
+        }
+
+        if let Some(target) = &self.torpedo_target {
+            let character = '*';
+            let mut style = Style::new();
+            let position = (target.x, target.y);
 
             style.set_bg(Color::LightRed);
 

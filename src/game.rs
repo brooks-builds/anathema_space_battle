@@ -43,6 +43,9 @@ pub struct GameState {
     command_destination_set: Value<bool>,
     player_torpedoes_remaining: Value<i32>,
     setting_torpedo_target: Value<bool>,
+    torpedo_target_x: Value<i32>,
+    torpedo_target_y: Value<i32>,
+    torpedo_target_set: Value<bool>,
 }
 
 impl Component for Game {
@@ -268,12 +271,6 @@ impl Component for Game {
     ) {
         let world = &mut self.0;
 
-        if world.setting_torpedo_target {
-            let mouse_position = Vector::new(mouse.pos().x, mouse.pos().y);
-
-            world.mouse_position = mouse_position;
-        }
-
         if world.display_possible_destinations
             && mouse.left_up()
             && !(*state.command_destination_set.to_ref())
@@ -298,6 +295,33 @@ impl Component for Game {
                         &mut context,
                     );
                 });
+        } else if world.setting_torpedo_target
+            && mouse.left_up()
+            && !(*state.torpedo_target_set.to_ref())
+        {
+            children
+                .elements()
+                .at_position(mouse.pos())
+                .by_tag("canvas")
+                .first(|el, _attrs| {
+                    let canvas = el.to::<Canvas>();
+                    let coords = canvas.translate(mouse.pos());
+                    let x = coords.x as i32;
+                    let y = coords.y as i32;
+
+                    state.torpedo_target_x.set(x);
+                    state.torpedo_target_y.set(y);
+                    world.torpedo_target = Some(Vector::new(x, y));
+                    state.torpedo_target_set.set(true);
+                    log(
+                        format!("Setting torpedo target to be: ({x},{y})"),
+                        &mut context,
+                    );
+                });
+        } else if world.setting_torpedo_target {
+            let mouse_position = Vector::new(mouse.pos().x, mouse.pos().y);
+
+            world.mouse_position = mouse_position;
         }
     }
 }
