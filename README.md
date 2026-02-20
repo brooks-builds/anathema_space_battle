@@ -45,6 +45,7 @@
   - [x] While in target setting mode, the cell in the canvas highlights so that I can see where I'll be firing at
   - [x] After setting a target to fire at, the cell remains lit up and the target coordinates are displayed
   - [x] Can cancel setting the target
+  - [ ] Add the torpedo firing coordinates to the command
 
 ### Polish
 

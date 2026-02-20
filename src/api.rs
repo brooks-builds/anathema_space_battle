@@ -315,6 +315,9 @@ pub fn submit_game_turn(
             destination: turn_command
                 .destination
                 .map(|destination| (destination.x, destination.y)),
+            torpedo_target: turn_command
+                .torpedo_target
+                .map(|target| (target.x, target.y)),
         };
         let response = client
             .post(url)
@@ -335,4 +338,5 @@ pub fn submit_game_turn(
 pub struct SubmitTurnCommandBody {
     pub speed_change: i8,
     pub destination: Option<(i32, i32)>,
+    pub torpedo_target: Option<(i32, i32)>,
 }

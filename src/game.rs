@@ -230,9 +230,11 @@ impl Component for Game {
                 } else {
                     None
                 };
+                let torpedo_target = self.0.torpedo_target;
                 let message = AppMessage::SubmitTurnCommand(TurnCommand {
                     speed_change,
                     destination,
+                    torpedo_target,
                 });
 
                 context.components.by_name(App::ident()).send(message);
@@ -350,6 +352,7 @@ impl BBAppComponent for Game {
 pub struct TurnCommand {
     pub speed_change: i8,
     pub destination: Option<Vector>,
+    pub torpedo_target: Option<Vector>,
 }
 
 pub fn log<T: State>(message: String, context: &mut anathema::component::Context<'_, '_, T>) {
