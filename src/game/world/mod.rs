@@ -180,4 +180,10 @@ impl World {
 
         None
     }
+
+    pub fn get_current_position(&self) -> Option<Vector> {
+        let index = self.find_player_index(&self.player_id)?;
+
+        self.player_positions.get(index).copied()
+    }
 }

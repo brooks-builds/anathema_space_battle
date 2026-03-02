@@ -73,6 +73,12 @@ impl Component for Game {
                 let done = world.animate_turn(canvas);
 
                 if done {
+                    state.player_position_xs.set(List::from_iter(
+                        world.player_positions.iter().map(|position| position.x),
+                    ));
+                    state.player_position_ys.set(List::from_iter(
+                        world.player_positions.iter().map(|position| position.y),
+                    ));
                     state.animating_completed_turn.set(false);
                     state.can_take_turn.set(true);
                     world.finish_animating();
@@ -95,7 +101,10 @@ impl Component for Game {
             AppMessage::GameUpdate(game_stream) => {
                 let world = &mut self.0;
 
-                if world.next_turn_number < game_stream.game.turn_number && world.turn != 0 {
+                if world.next_turn_number < game_stream.game.turn_number
+                    && world.turn != 0
+                    && !*state.animating_completed_turn.to_ref()
+                {
                     state.animating_completed_turn.set(true);
                     world.next_turn_number = game_stream.game.turn_number;
                     world.turns = game_stream.turns;

@@ -300,6 +300,8 @@ pub struct DBPlayer {
     pub speed: i32,
     pub id: String,
     pub torpedo_count: i32,
+    pub position_x: Option<i32>,
+    pub position_y: Option<i32>,
 }
 
 pub fn submit_game_turn(
