@@ -1,4 +1,7 @@
-use crate::{app::AppMessage, game::TurnCommand};
+use crate::{
+    app::AppMessage,
+    game::{TurnCommand, world::vector::Vector},
+};
 use anathema::{component::Emitter, store::slab::Key};
 use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
@@ -212,6 +215,7 @@ pub enum GameStatus {
 pub struct GameStream {
     pub game: GameStreamGame,
     pub players: Vec<GameStreamPlayer>,
+    pub turns: Vec<GameTurn>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -339,4 +343,12 @@ pub struct SubmitTurnCommandBody {
     pub speed_change: i8,
     pub destination: Option<(i32, i32)>,
     pub torpedo_target: Option<(i32, i32)>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GameTurn {
+    pub destination: Option<Vector>,
+    pub turn_number: i32,
+    pub player_id: String,
+    pub ship_travel_steps: Vec<Vector>,
 }

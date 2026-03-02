@@ -1,7 +1,7 @@
 pub mod vector;
 
 use crate::{
-    api::{DBPlayer, GameStream, GameStreamPlayer},
+    api::{DBPlayer, GameStreamPlayer, GameTurn},
     game::world::vector::Vector,
 };
 use anathema::{default_widgets::Canvas, geometry::Pos, state::Color, widgets::Style};
@@ -30,6 +30,9 @@ pub struct World {
     pub setting_torpedo_target: bool,
     pub mouse_position: Vector,
     pub torpedo_target: Option<Vector>,
+    pub turns: Vec<GameTurn>,
+    pub next_turn_number: i32,
+    pub animate_step_index: usize,
 }
 
 impl World {
@@ -56,6 +59,37 @@ impl World {
 
     pub fn no_players(&self) -> bool {
         self.player_characters.is_empty()
+    }
+
+    pub fn animate_turn(&mut self, canvas: &mut Canvas) -> bool {
+        let mut finished_animating = true;
+
+        for (index, player_id) in self.player_ids.iter().enumerate() {
+            let Some(player_turn) = self
+                .turns
+                .iter()
+                .find(|turn| &turn.player_id == player_id && turn.turn_number == self.turn)
+            else {
+                continue;
+            };
+
+            if let Some(step) = player_turn.ship_travel_steps.get(self.animate_step_index) {
+                let player_character = self.player_characters[index];
+                let player_style = self.player_styles[index];
+
+                canvas.put(player_character, player_style, *step);
+                self.player_positions[index] = *step;
+                finished_animating = false;
+            }
+        }
+
+        self.animate_step_index += 1;
+
+        finished_animating
+    }
+
+    pub fn finish_animating(&mut self) {
+        self.animate_step_index = 0;
     }
 
     pub fn draw(&self, canvas: &mut Canvas) {
@@ -147,15 +181,5 @@ impl World {
         }
 
         None
-    }
-
-    pub fn update_after_turn(&mut self, game: &GameStream) {
-        for player in game.players.iter() {
-            let Some(index) = self.find_player_index(&player.id) else {
-                continue;
-            };
-
-            self.player_positions[index] = Vector::new(player.position_x, player.position_y);
-        }
     }
 }

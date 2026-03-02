@@ -1,8 +1,9 @@
 use std::ops::Sub;
 
-use serde::Serialize;
+use anathema::geometry::LocalPos;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Default, Clone, Copy)]
+#[derive(Debug, Serialize, Default, Clone, Copy, Deserialize)]
 pub struct Vector {
     pub x: i32,
     pub y: i32,
@@ -28,6 +29,15 @@ impl Sub for &Vector {
         Vector {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
+        }
+    }
+}
+
+impl From<Vector> for LocalPos {
+    fn from(val: Vector) -> Self {
+        LocalPos {
+            x: val.x as u16,
+            y: val.y as u16,
         }
     }
 }

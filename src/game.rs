@@ -1,4 +1,4 @@
-mod world;
+pub mod world;
 
 use crate::{
     app::{App, AppMessage},
@@ -46,6 +46,7 @@ pub struct GameState {
     torpedo_target_x: Value<i32>,
     torpedo_target_y: Value<i32>,
     torpedo_target_set: Value<bool>,
+    animating_completed_turn: Value<bool>,
 }
 
 impl Component for Game {
@@ -55,7 +56,7 @@ impl Component for Game {
 
     fn on_tick(
         &mut self,
-        _state: &mut Self::State,
+        state: &mut Self::State,
         mut children: anathema::component::Children<'_, '_>,
         _context: anathema::component::Context<'_, '_, Self::State>,
         _dt: std::time::Duration,
@@ -64,9 +65,21 @@ impl Component for Game {
 
         children.elements().by_tag("canvas").first(|el, _| {
             let canvas = el.to::<Canvas>();
+            let animating_turn = *state.animating_completed_turn.to_ref();
 
             canvas.clear();
-            world.draw(canvas);
+
+            if animating_turn {
+                let done = world.animate_turn(canvas);
+
+                if done {
+                    state.animating_completed_turn.set(false);
+                    state.can_take_turn.set(true);
+                    world.finish_animating();
+                }
+            } else {
+                world.draw(canvas);
+            }
         });
     }
 
@@ -81,11 +94,10 @@ impl Component for Game {
             AppMessage::GameUpdate(game_stream) => {
                 let world = &mut self.0;
 
-                if world.turn < game_stream.game.turn_number {
-                    world.turn = game_stream.game.turn_number;
-                    state.can_take_turn.set(true);
-                    log(format!("{world:#?}"), &mut context);
-                    world.update_after_turn(&game_stream);
+                if world.next_turn_number < game_stream.game.turn_number && world.turn != 0 {
+                    state.animating_completed_turn.set(true);
+                    world.next_turn_number = game_stream.game.turn_number;
+                    world.turns = game_stream.turns;
                 }
 
                 if world.host_id != game_stream.game.host_id {
@@ -142,6 +154,9 @@ impl Component for Game {
                         .components
                         .by_name(App::ident())
                         .send(AppMessage::Log(format!("world initiated: {world:#?}")));
+
+                    world.turn = game_stream.game.turn_number;
+                    world.next_turn_number = world.turn;
                 } else {
                     world.update_players_ready(game_stream.players);
 
