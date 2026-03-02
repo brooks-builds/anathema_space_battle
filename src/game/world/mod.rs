@@ -158,11 +158,9 @@ impl World {
     pub fn player_updated(&mut self, player: DBPlayer) {
         self.player_speed = player.speed;
         self.player_id = player.id;
-
-        self.calculate_legal_destinations();
     }
 
-    fn calculate_legal_destinations(&mut self) -> Option<()> {
+    pub fn calculate_legal_destinations(&mut self) -> Option<()> {
         let index = self.find_player_index(&self.player_id)?;
         let position = &self.player_positions[index];
         let speed = self.player_speed;

@@ -76,6 +76,7 @@ impl Component for Game {
                     state.animating_completed_turn.set(false);
                     state.can_take_turn.set(true);
                     world.finish_animating();
+                    world.calculate_legal_destinations();
                 }
             } else {
                 world.draw(canvas);
@@ -171,6 +172,7 @@ impl Component for Game {
                     .player_torpedoes_remaining
                     .set(db_player.torpedo_count);
                 self.0.player_updated(db_player);
+                self.0.calculate_legal_destinations();
 
                 context
                     .components
