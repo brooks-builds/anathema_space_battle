@@ -70,7 +70,7 @@ impl Component for Game {
             canvas.clear();
 
             if animating_turn {
-                let done = world.animate_turn(canvas);
+                let done = world.animate(canvas);
 
                 if done {
                     state.player_position_xs.set(List::from_iter(
@@ -257,7 +257,7 @@ impl Component for Game {
                 } else {
                     None
                 };
-                let torpedo_target = self.0.torpedo_target;
+                let torpedo_target = self.0.torpedo_target.take();
                 let message = AppMessage::SubmitTurnCommand(TurnCommand {
                     speed_change,
                     destination,
@@ -268,8 +268,11 @@ impl Component for Game {
                 state.can_take_turn.set(false);
                 state.command_speed_change.set(0);
                 state.setting_destination.set(false);
+                state.setting_torpedo_target.set(false);
                 self.0.display_possible_destinations = false;
+                self.0.setting_torpedo_target = false;
                 state.command_destination_set.set(false);
+                state.torpedo_target_set.set(false);
             }
             "toggle_set_destination" => {
                 let setting_destination = !(*state.setting_destination.to_ref());
@@ -333,6 +336,7 @@ impl Component for Game {
             && mouse.left_up()
             && !(*state.torpedo_target_set.to_ref())
         {
+            log("setting torpedo target".to_owned(), &mut context);
             children
                 .elements()
                 .at_position(mouse.pos())

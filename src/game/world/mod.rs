@@ -33,6 +33,7 @@ pub struct World {
     pub turns: Vec<GameTurn>,
     pub next_turn_number: i32,
     pub animate_step_index: usize,
+    pub torpedo_positions: Vec<Vector>,
 }
 
 impl World {
@@ -55,14 +56,23 @@ impl World {
         self.player_max_speeds.push(player.ship_max_speed);
         self.players_ready.push(player.ready);
         self.player_ship_classnames.push(player.ship_classname);
+        self.torpedo_positions.push(position);
     }
 
     pub fn no_players(&self) -> bool {
         self.player_characters.is_empty()
     }
 
-    pub fn animate_turn(&mut self, canvas: &mut Canvas) -> bool {
-        let mut finished_animating = true;
+    pub fn animate(&mut self, canvas: &mut Canvas) -> bool {
+        let player_ship_done = self.animate_player_ship(canvas);
+        let torpedoes_done = self.animate_player_torpedo(canvas);
+
+        self.animate_step_index += 1;
+        player_ship_done && torpedoes_done
+    }
+
+    pub fn animate_player_torpedo(&mut self, canvas: &mut Canvas) -> bool {
+        let mut finished_animating_torpedo = true;
 
         for (index, player_id) in self.player_ids.iter().enumerate() {
             let Some(player_turn) = self
@@ -73,19 +83,69 @@ impl World {
                 continue;
             };
 
-            if let Some(step) = player_turn.ship_travel_steps.get(self.animate_step_index) {
+            if let Some(torpedo_travel_steps) = &player_turn.torpedo_travel_steps
+                && let Some(step) = torpedo_travel_steps.get(self.animate_step_index)
+            {
+                let character = '*';
+                let player_style = self.player_styles[index].fg.unwrap();
+                let mut style = Style::new();
+
+                style.set_fg(player_style);
+
+                canvas.put(character, style, *step);
+                finished_animating_torpedo = false;
+                self.torpedo_positions[index] = *step;
+            } else {
+                let center = self.torpedo_positions[index];
+                let all_around = center.all_around();
+
+                let explosion_character = ' ';
+                let mut style = Style::new();
+
+                style.set_bg(Color::Red);
+
+                canvas.put(explosion_character, style, center);
+
+                for point in all_around {
+                    canvas.put(explosion_character, style, point);
+                }
+            }
+        }
+
+        finished_animating_torpedo
+    }
+
+    pub fn animate_player_ship(&mut self, canvas: &mut Canvas) -> bool {
+        let mut finished_animating_ship = true;
+
+        for (index, player_id) in self.player_ids.iter().enumerate() {
+            let Some(player_turn) = self
+                .turns
+                .iter()
+                .find(|turn| &turn.player_id == player_id && turn.turn_number == self.turn)
+            else {
+                continue;
+            };
+
+            if let Some(ship_travel_steps) = &player_turn.ship_travel_steps
+                && let Some(step) = ship_travel_steps.get(self.animate_step_index)
+            {
                 let player_character = self.player_characters[index];
                 let player_style = self.player_styles[index];
 
                 canvas.put(player_character, player_style, *step);
                 self.player_positions[index] = *step;
-                finished_animating = false;
+                finished_animating_ship = false;
+            } else {
+                let player_position = self.player_positions[index];
+                let character = self.player_characters[index];
+                let style = self.player_styles[index];
+
+                canvas.put(character, style, player_position);
             }
         }
 
-        self.animate_step_index += 1;
-
-        finished_animating
+        finished_animating_ship
     }
 
     pub fn finish_animating(&mut self) {
@@ -179,11 +239,5 @@ impl World {
         }
 
         None
-    }
-
-    pub fn get_current_position(&self) -> Option<Vector> {
-        let index = self.find_player_index(&self.player_id)?;
-
-        self.player_positions.get(index).copied()
     }
 }

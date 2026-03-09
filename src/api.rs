@@ -256,9 +256,31 @@ pub fn get_game_sse(widget_id: Key, game_id: &str, emitter: Emitter, end_connect
             let mut line = String::new();
             stream_reader.read_line(&mut line).unwrap();
 
-            let game_data = serde_json::from_str::<GameStream>(&line).unwrap();
+            // let json_value = serde_json::from_str::<Value>(&line).unwrap();
+            // emitter
+            //     .try_emit(
+            //         widget_id,
+            //         AppMessage::Log(format!("RAW JSON VALUE: {json_value:#?}")),
+            //     )
+            //     .ok();
+
+            let game_data = match serde_json::from_str::<GameStream>(&line) {
+                Ok(game_stream) => game_stream,
+                Err(error) => {
+                    let message = AppMessage::Log(format!(
+                        "Error converting game sse to game stream: {error:?}"
+                    ));
+                    emitter.try_emit(widget_id, message).ok();
+                    continue;
+                }
+            };
             let message = AppMessage::GameUpdate(game_data);
-            emitter.try_emit(widget_id, message).unwrap();
+            if let Err(error) = emitter.try_emit(widget_id, message) {
+                let message =
+                    AppMessage::Log(format!("Error sending game stream to App: {error:?}"));
+                emitter.try_emit(widget_id, message).ok();
+                continue;
+            }
 
             if let Ok(()) = end_connection.try_recv() {
                 break;
@@ -300,8 +322,6 @@ pub struct DBPlayer {
     pub speed: i32,
     pub id: String,
     pub torpedo_count: i32,
-    pub position_x: Option<i32>,
-    pub position_y: Option<i32>,
 }
 
 pub fn submit_game_turn(
@@ -352,5 +372,6 @@ pub struct GameTurn {
     pub destination: Option<Vector>,
     pub turn_number: i32,
     pub player_id: String,
-    pub ship_travel_steps: Vec<Vector>,
+    pub ship_travel_steps: Option<Vec<Vector>>,
+    pub torpedo_travel_steps: Option<Vec<Vector>>,
 }

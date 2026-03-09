@@ -45,13 +45,6 @@ vstack
 						hstack
 							text "Torpedoes: "
 							text state.player_torpedoes_remaining
-						if state.torpedo_target_set
-							hstack
-								text "Torpedo target: ("
-								text state.torpedo_target_x
-								text ", "
-								text state.torpedo_target_y
-								text ")"
 			@BBHeading [text: "Turn"]
 			if state.can_take_turn
 				hstack
@@ -65,6 +58,13 @@ vstack
 						text state.command_destination_x
 						text ", "
 						text state.command_destination_y
+						text ")"
+				if state.torpedo_target_set
+					hstack
+						text "Torpedo target: ("
+						text state.torpedo_target_x
+						text ", "
+						text state.torpedo_target_y
 						text ")"
 				hstack
 					spacer

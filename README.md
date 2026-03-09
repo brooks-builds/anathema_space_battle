@@ -45,9 +45,16 @@
   - [x] While in target setting mode, the cell in the canvas highlights so that I can see where I'll be firing at
   - [x] After setting a target to fire at, the cell remains lit up and the target coordinates are displayed
   - [x] Can cancel setting the target
-  - [ ] Add the torpedo firing coordinates to the command
+  - [x] Add the torpedo firing coordinates to the command
+- [ ] When hit by torpedo, lose x health
+  - [ ] hit on route, full damage
+  - [ ] hit same square that the torpedo explodes at - double damage
+  - [ ] hit by explosion near torpedo - half damage
 
 ### Polish
 
 - [x] Upon new turn, ships move smoothly towards new destinations
 - [ ] An error should be logged to file instead of the screen when submitting an empty code
+- [ ] Redo movement
+  - [ ] Can move up to engine speed
+  - [ ] At higher engine speeds, must move
