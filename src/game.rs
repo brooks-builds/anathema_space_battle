@@ -107,6 +107,7 @@ impl Component for Game {
                 {
                     state.animating_completed_turn.set(true);
                     world.next_turn_number = game_stream.game.turn_number;
+                    world.turn = game_stream.game.turn_number - 1;
                     world.turns = game_stream.turns;
                 }
 

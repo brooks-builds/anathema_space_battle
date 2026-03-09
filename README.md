@@ -49,5 +49,5 @@
 
 ### Polish
 
-- [ ] Upon new turn, ships move smoothly towards new destinations
+- [x] Upon new turn, ships move smoothly towards new destinations
 - [ ] An error should be logged to file instead of the screen when submitting an empty code
