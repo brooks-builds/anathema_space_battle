@@ -25,5 +25,6 @@ vstack
 		possible_ship_max_speeds: state.possible_ship_max_speeds,
 		player_token: state.player_token,
 		possible_ship_torpedoes: state.possible_ship_torpedoes,
+		possible_ship_hitpoints: state.possible_ship_hitpoints
 	]
 

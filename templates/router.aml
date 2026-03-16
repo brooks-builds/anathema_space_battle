@@ -11,6 +11,7 @@ vstack
 			possible_ship_max_speeds: attributes.possible_ship_max_speeds,
 			player_token: attributes.player_token,
 			possible_ship_torpedoes: attributes.possible_ship_torpedoes,
+			possible_ship_hitpoints: attributes.possible_ship_hitpoints
 		]
 		case "Game": @game [
 			player_id: attributes.player_id,

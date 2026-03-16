@@ -160,6 +160,7 @@ pub struct Ship {
     pub character: char,
     pub max_speed: i32,
     pub max_torpedo_count: i32,
+    pub max_hitpoints: i32,
 }
 
 pub fn get_possible_ships(widget_id: Key, emitter: Emitter) {
@@ -238,6 +239,7 @@ pub struct GameStreamPlayer {
     pub position_x: i32,
     pub position_y: i32,
     pub ship_classname: String,
+    pub hitpoints: Option<i32>,
 }
 
 pub fn get_game_sse(widget_id: Key, game_id: &str, emitter: Emitter, end_connection: Receiver<()>) {
@@ -322,6 +324,7 @@ pub struct DBPlayer {
     pub speed: i32,
     pub id: String,
     pub torpedo_count: i32,
+    pub hitpoints: Option<i32>,
 }
 
 pub fn submit_game_turn(

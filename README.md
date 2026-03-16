@@ -38,7 +38,7 @@
   - [x] Clicking on legal destination, set command move_to position and stops highlight
   - [x] Submitting command also sends move to position
   - [x] Upon new turn, ship is set to new turn
-- [ ] Players can fire a torpedo
+- [x] Players can fire a torpedo
   - [x] Players can see how many torpedoes a ship has when selecting a ship in the lobby
   - [x] Players can see how many torpedoes they have left for their own ship
   - [x] Button to set firing destination
@@ -47,6 +47,7 @@
   - [x] Can cancel setting the target
   - [x] Add the torpedo firing coordinates to the command
 - [ ] When hit by torpedo, lose x health
+  - [ ] ships have hitpoints
   - [ ] hit on route, full damage
   - [ ] hit same square that the torpedo explodes at - double damage
   - [ ] hit by explosion near torpedo - half damage

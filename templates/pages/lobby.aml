@@ -23,6 +23,8 @@ vstack
 					text attributes.possible_ship_max_speeds[loop]
 					text " torpedoes: "
 					text attributes.possible_ship_torpedoes[loop]
+					text " hitpoints: "
+					text attributes.possible_ship_hitpoints[loop]
 	text "Change Ship Color"
 	@BBColorPicker (on_select->set_ship_color) [colors: attributes.possible_colors]
 	padding [top: 1, bottom: 1]

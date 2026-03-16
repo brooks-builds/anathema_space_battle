@@ -45,6 +45,9 @@ vstack
 						hstack
 							text "Torpedoes: "
 							text state.player_torpedoes_remaining
+						hstack
+							text "Hitpoints: "
+							text state.player_hitpoints
 			@BBHeading [text: "Turn"]
 			if state.can_take_turn
 				hstack
@@ -112,3 +115,6 @@ vstack
 								text state.player_position_xs[loop]
 								text ", "
 								text state.player_position_ys[loop]
+							hstack
+								text "Hitpoints: "
+								text state.all_player_hitpoints[loop]

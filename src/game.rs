@@ -47,6 +47,8 @@ pub struct GameState {
     torpedo_target_y: Value<i32>,
     torpedo_target_set: Value<bool>,
     animating_completed_turn: Value<bool>,
+    player_hitpoints: Value<i32>,
+    all_player_hitpoints: Value<List<i32>>,
 }
 
 impl Component for Game {
@@ -100,6 +102,13 @@ impl Component for Game {
         match message {
             AppMessage::GameUpdate(game_stream) => {
                 let world = &mut self.0;
+
+                state.all_player_hitpoints.set(List::from_iter(
+                    game_stream
+                        .players
+                        .iter()
+                        .map(|player| player.hitpoints.unwrap_or_default()),
+                ));
 
                 if world.next_turn_number < game_stream.game.turn_number
                     && world.turn != 0
@@ -181,6 +190,9 @@ impl Component for Game {
                 state
                     .player_torpedoes_remaining
                     .set(db_player.torpedo_count);
+                state
+                    .player_hitpoints
+                    .set(db_player.hitpoints.unwrap_or_default());
                 self.0.player_updated(db_player);
                 self.0.calculate_legal_destinations();
 
