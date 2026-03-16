@@ -47,7 +47,7 @@
   - [x] Can cancel setting the target
   - [x] Add the torpedo firing coordinates to the command
 - [ ] When hit by torpedo, lose x health
-  - [ ] ships have hitpoints
+  - [x] ships have hitpoints
   - [ ] hit on route, full damage
   - [ ] hit same square that the torpedo explodes at - double damage
   - [ ] hit by explosion near torpedo - half damage
