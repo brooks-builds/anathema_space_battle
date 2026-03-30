@@ -95,7 +95,7 @@ impl World {
                 canvas.put(character, style, *step);
                 finished_animating_torpedo = false;
                 self.torpedo_positions[index] = *step;
-            } else {
+            } else if player_turn.torpedo_travel_steps.is_some() {
                 let center = self.torpedo_positions[index];
                 let all_around = center.all_around();
 

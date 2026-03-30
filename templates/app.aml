@@ -8,6 +8,9 @@ vstack
 					hstack
 						text "Turn: "
 						text state.turn_number
+				hstack
+					text " "
+					text state.game_status
 				spacer
 				text state.player_name
 				text " "

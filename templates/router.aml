@@ -17,3 +17,4 @@ vstack
 			player_id: attributes.player_id,
 			player_token: attributes.player_token
 		]
+		case "GameOver": @game_over_page

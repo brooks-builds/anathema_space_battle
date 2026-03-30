@@ -1,0 +1,14 @@
+let THEME = {
+	alive: {fg: "green"},
+	dead: {fg: "red"},
+}
+
+vstack
+	@BBHeading [text: "Scoreboard"]
+	for name in state.player_names
+		hstack [foreground: THEME[state.player_status[loop]].fg]
+			spacer
+			text name
+			text " "
+			text state.player_hitpoints[loop]
+			spacer

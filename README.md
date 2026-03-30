@@ -46,11 +46,8 @@
   - [x] After setting a target to fire at, the cell remains lit up and the target coordinates are displayed
   - [x] Can cancel setting the target
   - [x] Add the torpedo firing coordinates to the command
-- [ ] When hit by torpedo, lose x health
+- [x] When hit by torpedo, lose x health
   - [x] ships have hitpoints
-  - [ ] hit on route, full damage
-  - [ ] hit same square that the torpedo explodes at - double damage
-  - [ ] hit by explosion near torpedo - half damage
 
 ### Polish
 
@@ -59,3 +56,7 @@
 - [ ] Redo movement
   - [ ] Can move up to engine speed
   - [ ] At higher engine speeds, must move
+- [ ] Damage with torpedos
+  - [ ] hit on route, full damage
+  - [ ] hit same square that the torpedo explodes at - double damage
+  - [ ] hit by explosion near torpedo - half damage

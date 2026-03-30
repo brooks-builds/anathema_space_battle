@@ -64,6 +64,7 @@ pub struct JoinGameResponse {
     pub token: String,
     pub game_id: String,
     pub player_id: String,
+    pub status: String,
 }
 
 pub fn get_lobby_sse(
@@ -226,6 +227,7 @@ pub struct GameStreamGame {
     pub width: i32,
     pub height: i32,
     pub turn_number: i32,
+    pub status: GameStatus,
 }
 
 #[derive(Debug, Deserialize)]
@@ -377,4 +379,35 @@ pub struct GameTurn {
     pub player_id: String,
     pub ship_travel_steps: Option<Vec<Vector>>,
     pub torpedo_travel_steps: Option<Vec<Vector>>,
+}
+
+pub fn get_game_by_id(game_id: &str, widget_id: Key, emitter: Emitter) {
+    let url = format!("{BASE_API_URL}/api/games/{game_id}");
+
+    thread::spawn(move || {
+        let client = Client::new();
+        let game = client
+            .get(url)
+            .send()
+            .unwrap()
+            .json::<GetGameByIdResponse>()
+            .unwrap();
+        let message = AppMessage::GetGameResponse(game);
+
+        emitter.try_emit(widget_id, message).ok();
+    });
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetGameByIdResponse {
+    pub id: String,
+    pub players: Vec<GetGameByIdPlayer>,
+    pub status: GameStatus,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetGameByIdPlayer {
+    pub id: String,
+    pub name: String,
+    pub hitpoints: i32,
 }

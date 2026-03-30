@@ -1,11 +1,11 @@
 use crate::{
     api::{
-        self, CreateGameResponse, DBPlayer, GameStream, JoinGameResponse, LobbyStream, Ship,
-        ShipColor,
+        self, CreateGameResponse, DBPlayer, GameStream, GetGameByIdResponse, JoinGameResponse,
+        LobbyStream, Ship, ShipColor,
     },
     game::{Game, TurnCommand},
     logger,
-    pages::lobby::LobbyPage,
+    pages::{game_over::GameOver, lobby::LobbyPage},
     router::Route,
 };
 use anathema::{
@@ -130,6 +130,7 @@ impl Component for App {
                 state.current_route.set(Route::Lobby.into());
                 state.player_id.set(join_game_response.player_id);
                 state.player_token.set(join_game_response.token);
+                state.game_status.set(join_game_response.status);
 
                 let (sender, receiver) = channel();
                 self.0.lobby_sse_sender = Some(sender);
@@ -142,6 +143,10 @@ impl Component for App {
                 );
             }
             AppMessage::LobbyUpdate(lobby_stream) => {
+                if matches!(lobby_stream.game_status, api::GameStatus::Playing) {
+                    state.game_status.set("Playing".to_owned());
+                }
+
                 context
                     .components
                     .by_name(LobbyPage::ident())
@@ -250,6 +255,11 @@ impl Component for App {
                 let turn = game_stream.game.turn_number;
                 let previous_turn = *state.turn_number.to_ref();
 
+                if matches!(game_stream.game.status, api::GameStatus::GameOver) {
+                    state.game_status.set("GameOver".to_owned());
+                    state.current_route.set(Route::GameOver.into());
+                }
+
                 context
                     .components
                     .by_name(Game::ident())
@@ -298,6 +308,21 @@ impl Component for App {
                 };
 
                 logger::log(message, player_name);
+            }
+            AppMessage::GetGame => {
+                let Some(id) = self.0.game_id.as_ref() else {
+                    return;
+                };
+                let widget_id = context.widget_id;
+                let emitter = context.emitter.clone();
+
+                api::get_game_by_id(id, widget_id, emitter);
+            }
+            AppMessage::GetGameResponse(game) => {
+                context
+                    .components
+                    .by_name(GameOver::name())
+                    .send(AppMessage::GetGameResponse(game));
             }
         }
     }
@@ -357,4 +382,6 @@ pub enum AppMessage {
     GameTurnSubmitted,
     GetPlayerFromServer,
     Log(String),
+    GetGame,
+    GetGameResponse(GetGameByIdResponse),
 }
